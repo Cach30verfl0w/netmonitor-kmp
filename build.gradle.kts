@@ -6,6 +6,6 @@ plugins {
 
 val projectVersion = libs.versions.netmonitor.get()
 allprojects {
-    group = "dev.cacheoverflow.netmonitor"
+    group = "net.cacheoverflow.netmonitor"
     version = projectVersion
 }

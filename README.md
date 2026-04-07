@@ -60,6 +60,6 @@ Add the dependency to your `commonMain` source set:
 ```gradle
 sourceSets {
     commonMain.dependencies {
-        implementation("dev.cacheoverflow.netmonitor:netmonitor-core:1.0.0") 
+        implementation("net.cacheoverflow.netmonitor:netmonitor-core:1.0.0") 
     }
 }
