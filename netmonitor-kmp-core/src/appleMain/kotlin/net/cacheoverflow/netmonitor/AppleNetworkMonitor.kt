@@ -52,10 +52,11 @@ internal class AppleNetworkMonitor : NetworkMonitor {
         nw_path_monitor_set_update_handler(pathMonitor) { networkPath ->
             val isMetered = nw_path_is_expensive(networkPath)
             val networkType = when {
-                nw_path_uses_interface_type(networkPath, nw_interface_type_wifi) -> NetworkType.WIFI
-                nw_path_uses_interface_type(networkPath, nw_interface_type_wired) -> NetworkType.ETHERNET
-                nw_path_uses_interface_type(networkPath, nw_interface_type_cellular) -> NetworkType.CELLULAR
-                else -> NetworkType.UNKNOWN
+                nw_path_uses_interface_type(networkPath, nw_interface_type_wifi) -> NetworkType.WiFi
+                nw_path_uses_interface_type(networkPath, nw_interface_type_wired) -> NetworkType.Ethernet
+                nw_path_uses_interface_type(networkPath, nw_interface_type_cellular) ->
+                    NetworkType.Cellular(NetworkType.Cellular.Generation.UNKNOWN, null)
+                else -> NetworkType.Unknown
             }
 
             _state.value = when (nw_path_get_status(networkPath)) {

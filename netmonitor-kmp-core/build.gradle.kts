@@ -7,7 +7,9 @@ import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.mavenPublish)
 }
+
 
 kotlin {
     jvmToolchain(libs.versions.jvmTarget.get().toInt())
@@ -57,5 +59,33 @@ android {
         val javaVersion = JavaVersion.toVersion(libs.versions.jvmTarget.get())
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
+    }
+}
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    coordinates(group.toString(), name, version.toString())
+
+    pom {
+        name = "netmonitor-kmp"
+        description = " A reactive network monitoring library for Kotlin Multiplatform."
+        url = "https://github.com/cach30verfl0w/netmonitor-kmp"
+        licenses {
+            license {
+                name = "Apache License 2.0"
+                url = "https://www.apache.org/licenses/LICENSE-2.0"
+            }
+        }
+        developers {
+            developer {
+                id = "cach30verfl0w"
+                name = "Cedric Hammes"
+                url = "https://github.com/cach30verfl0w"
+            }
+        }
+        scm {
+            url = this@pom.url
+        }
     }
 }
