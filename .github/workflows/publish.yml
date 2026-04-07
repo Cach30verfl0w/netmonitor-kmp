@@ -2,7 +2,7 @@ name: Publish
 on:
   push:
     branches:
-      - feat-maven-central-publishing
+      - main
 jobs:
   publish:
     name: Release build and publish

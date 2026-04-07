@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.mavenPublish)
 }
 
+
 kotlin {
     jvmToolchain(libs.versions.jvmTarget.get().toInt())
     androidTarget()
@@ -64,7 +65,7 @@ android {
 mavenPublishing {
     publishToMavenCentral()
     signAllPublications()
-    coordinates(group.toString(), "library", version.toString())
+    coordinates(group.toString(), name, version.toString())
 
     pom {
         name = "netmonitor-kmp"
