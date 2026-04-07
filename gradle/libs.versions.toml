@@ -1,10 +1,11 @@
 [versions]
-netmonitor = "1.0.0" # https://github.com/Cach30verfl0w/netmonitor-kmp/releases
+netmonitor = "1.0.0-SNAPHOST" # https://github.com/Cach30verfl0w/netmonitor-kmp/releases
 kotlin = "2.3.20" # https://github.com/JetBrains/kotlin/releases
 jvmTarget = "23"
 
 kotlinx-coroutines = "1.10.2" # https://github.com/Kotlin/kotlinx.coroutines/releases
 composeMultiplatform = "1.10.3" # https://github.com/JetBrains/compose-multiplatform/releases
+mavenPublish = "0.36.0" # https://github.com/vanniktech/gradle-maven-publish-plugin/releases
 
 # Android
 androidGradle = "8.13.2" # https://mvnrepository.com/artifact/com.android.tools.build/gradle
@@ -36,3 +37,4 @@ androidApplication = { id = "com.android.application", version.ref = "androidGra
 # Compose
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
