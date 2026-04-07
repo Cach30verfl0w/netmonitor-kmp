@@ -1,7 +1,8 @@
 name: Publish
 on:
-  release:
-    types: [released, prereleased]
+  push:
+    branches:
+      - feat-maven-central-publishing
 jobs:
   publish:
     name: Release build and publish
