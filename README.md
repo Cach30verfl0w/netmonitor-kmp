@@ -65,14 +65,11 @@ scope.launch {
 
 ## 📦 Installation
 
-> [!IMPORTANT]
-> **WIP:** Soon available on Maven Central.
-
 Add the dependency to your `commonMain` source set:
 
 ```gradle
 sourceSets {
     commonMain.dependencies {
-        implementation("net.cacheoverflow.netmonitor:netmonitor-core:1.0.0") 
+        implementation("net.cacheoverflow.netmonitor:netmonitor-kmp-core:1.0.0-SNAPSHOT") 
     }
 }
