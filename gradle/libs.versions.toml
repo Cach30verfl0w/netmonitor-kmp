@@ -1,0 +1,38 @@
+[versions]
+netmonitor = "1.0.0" # https://github.com/Cach30verfl0w/netmonitor-kmp/releases
+kotlin = "2.3.20" # https://github.com/JetBrains/kotlin/releases
+jvmTarget = "23"
+
+kotlinx-coroutines = "1.10.2" # https://github.com/Kotlin/kotlinx.coroutines/releases
+composeMultiplatform = "1.10.3" # https://github.com/JetBrains/compose-multiplatform/releases
+
+# Android
+androidGradle = "8.13.2" # https://mvnrepository.com/artifact/com.android.tools.build/gradle
+android-compileSdk = "36"
+android-targetSdk = "36"
+android-minSdk = "23"
+
+# Example App
+material3 = "1.10.0-alpha05" # https://github.com/JetBrains/compose-multiplatform/releases
+androidx-activity = "1.13.0" # https://developer.android.com/jetpack/androidx/releases/activity
+
+
+[libraries]
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+compose-runtime-annotations = { group = "androidx.compose.runtime", name = "runtime-annotation", version.ref = "composeMultiplatform" }
+
+# Example App
+compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "composeMultiplatform" }
+compose-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "composeMultiplatform" }
+compose-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "composeMultiplatform" }
+compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "material3" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity" }
+
+[plugins]
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+androidLibrary = { id = "com.android.library", version.ref = "androidGradle" }
+androidApplication = { id = "com.android.application", version.ref = "androidGradle" }
+
+# Compose
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

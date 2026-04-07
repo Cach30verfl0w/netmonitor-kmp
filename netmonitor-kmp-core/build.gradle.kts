@@ -1,0 +1,61 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class, ExperimentalAbiValidation::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+
+plugins {
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidLibrary)
+}
+
+kotlin {
+    jvmToolchain(libs.versions.jvmTarget.get().toInt())
+    androidTarget()
+    macosArm64()
+    listOf(iosSimulatorArm64(), iosArm64(), iosX64())
+    jvm {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
+        }
+    }
+
+    applyDefaultHierarchyTemplate {
+        common {
+            group("nonAndroid") {
+                withJvm()
+                group("apple") {
+                    withIos()
+                    withMacos()
+                }
+            }
+        }
+    }
+
+    abiValidation {
+        enabled = true
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation(libs.compose.runtime.annotations)
+                api(libs.kotlinx.coroutines.core)
+            }
+        }
+    }
+}
+
+android {
+    namespace = group.toString()
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    defaultConfig {
+        minSdk = libs.versions.android.minSdk.get().toInt()
+    }
+
+    compileOptions {
+        val javaVersion = JavaVersion.toVersion(libs.versions.jvmTarget.get())
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+    }
+}

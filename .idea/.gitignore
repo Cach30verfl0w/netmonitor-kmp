@@ -1,0 +1,8 @@
+/*
+!.gitignore
+!copyright/
+!copyright/**
+!dictionaries/
+!dictionaries/**
+!.name
+!icon.png

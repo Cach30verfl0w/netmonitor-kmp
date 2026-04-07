@@ -1,0 +1,49 @@
+public final class dev/cacheoverflow/netmonitor/AndroidNetworkMonitorKt {
+	public static final fun NetworkMonitor (Landroid/content/Context;)Ldev/cacheoverflow/netmonitor/NetworkMonitor;
+}
+
+public abstract interface class dev/cacheoverflow/netmonitor/NetworkMonitor : java/lang/AutoCloseable {
+	public abstract fun getState ()Lkotlinx/coroutines/flow/Flow;
+	public abstract fun isAvailable ()Z
+}
+
+public abstract interface class dev/cacheoverflow/netmonitor/NetworkState {
+}
+
+public final class dev/cacheoverflow/netmonitor/NetworkState$CaptivePortal : dev/cacheoverflow/netmonitor/NetworkState {
+	public static final field INSTANCE Ldev/cacheoverflow/netmonitor/NetworkState$CaptivePortal;
+}
+
+public final class dev/cacheoverflow/netmonitor/NetworkState$Offline : dev/cacheoverflow/netmonitor/NetworkState {
+	public static final field INSTANCE Ldev/cacheoverflow/netmonitor/NetworkState$Offline;
+}
+
+public final class dev/cacheoverflow/netmonitor/NetworkState$Online : dev/cacheoverflow/netmonitor/NetworkState {
+	public fun <init> (Ldev/cacheoverflow/netmonitor/NetworkType;Z)V
+	public final fun component1 ()Ldev/cacheoverflow/netmonitor/NetworkType;
+	public final fun component2 ()Z
+	public final fun copy (Ldev/cacheoverflow/netmonitor/NetworkType;Z)Ldev/cacheoverflow/netmonitor/NetworkState$Online;
+	public static synthetic fun copy$default (Ldev/cacheoverflow/netmonitor/NetworkState$Online;Ldev/cacheoverflow/netmonitor/NetworkType;ZILjava/lang/Object;)Ldev/cacheoverflow/netmonitor/NetworkState$Online;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getType ()Ldev/cacheoverflow/netmonitor/NetworkType;
+	public fun hashCode ()I
+	public final fun isMetered ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class dev/cacheoverflow/netmonitor/NetworkState$Unknown : dev/cacheoverflow/netmonitor/NetworkState {
+	public static final field INSTANCE Ldev/cacheoverflow/netmonitor/NetworkState$Unknown;
+}
+
+public final class dev/cacheoverflow/netmonitor/NetworkType : java/lang/Enum {
+	public static final field BLUETOOTH Ldev/cacheoverflow/netmonitor/NetworkType;
+	public static final field CELLULAR Ldev/cacheoverflow/netmonitor/NetworkType;
+	public static final field ETHERNET Ldev/cacheoverflow/netmonitor/NetworkType;
+	public static final field UNKNOWN Ldev/cacheoverflow/netmonitor/NetworkType;
+	public static final field WIFI Ldev/cacheoverflow/netmonitor/NetworkType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public fun toString ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Ldev/cacheoverflow/netmonitor/NetworkType;
+	public static fun values ()[Ldev/cacheoverflow/netmonitor/NetworkType;
+}
+

@@ -1,0 +1,55 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, macosArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <dev.cacheoverflow.netmonitor:netmonitor-kmp-core>
+final enum class dev.cacheoverflow.netmonitor/NetworkType : kotlin/Enum<dev.cacheoverflow.netmonitor/NetworkType> { // dev.cacheoverflow.netmonitor/NetworkType|null[0]
+    enum entry BLUETOOTH // dev.cacheoverflow.netmonitor/NetworkType.BLUETOOTH|null[0]
+    enum entry CELLULAR // dev.cacheoverflow.netmonitor/NetworkType.CELLULAR|null[0]
+    enum entry ETHERNET // dev.cacheoverflow.netmonitor/NetworkType.ETHERNET|null[0]
+    enum entry UNKNOWN // dev.cacheoverflow.netmonitor/NetworkType.UNKNOWN|null[0]
+    enum entry WIFI // dev.cacheoverflow.netmonitor/NetworkType.WIFI|null[0]
+
+    final val entries // dev.cacheoverflow.netmonitor/NetworkType.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<dev.cacheoverflow.netmonitor/NetworkType> // dev.cacheoverflow.netmonitor/NetworkType.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun toString(): kotlin/String // dev.cacheoverflow.netmonitor/NetworkType.toString|toString(){}[0]
+    final fun valueOf(kotlin/String): dev.cacheoverflow.netmonitor/NetworkType // dev.cacheoverflow.netmonitor/NetworkType.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<dev.cacheoverflow.netmonitor/NetworkType> // dev.cacheoverflow.netmonitor/NetworkType.values|values#static(){}[0]
+}
+
+abstract interface dev.cacheoverflow.netmonitor/NetworkMonitor : kotlin/AutoCloseable { // dev.cacheoverflow.netmonitor/NetworkMonitor|null[0]
+    abstract val isAvailable // dev.cacheoverflow.netmonitor/NetworkMonitor.isAvailable|{}isAvailable[0]
+        abstract fun <get-isAvailable>(): kotlin/Boolean // dev.cacheoverflow.netmonitor/NetworkMonitor.isAvailable.<get-isAvailable>|<get-isAvailable>(){}[0]
+    abstract val state // dev.cacheoverflow.netmonitor/NetworkMonitor.state|{}state[0]
+        abstract fun <get-state>(): kotlinx.coroutines.flow/Flow<dev.cacheoverflow.netmonitor/NetworkState> // dev.cacheoverflow.netmonitor/NetworkMonitor.state.<get-state>|<get-state>(){}[0]
+}
+
+sealed interface dev.cacheoverflow.netmonitor/NetworkState { // dev.cacheoverflow.netmonitor/NetworkState|null[0]
+    final class Online : dev.cacheoverflow.netmonitor/NetworkState { // dev.cacheoverflow.netmonitor/NetworkState.Online|null[0]
+        constructor <init>(dev.cacheoverflow.netmonitor/NetworkType, kotlin/Boolean) // dev.cacheoverflow.netmonitor/NetworkState.Online.<init>|<init>(dev.cacheoverflow.netmonitor.NetworkType;kotlin.Boolean){}[0]
+
+        final val isMetered // dev.cacheoverflow.netmonitor/NetworkState.Online.isMetered|{}isMetered[0]
+            final fun <get-isMetered>(): kotlin/Boolean // dev.cacheoverflow.netmonitor/NetworkState.Online.isMetered.<get-isMetered>|<get-isMetered>(){}[0]
+        final val type // dev.cacheoverflow.netmonitor/NetworkState.Online.type|{}type[0]
+            final fun <get-type>(): dev.cacheoverflow.netmonitor/NetworkType // dev.cacheoverflow.netmonitor/NetworkState.Online.type.<get-type>|<get-type>(){}[0]
+
+        final fun component1(): dev.cacheoverflow.netmonitor/NetworkType // dev.cacheoverflow.netmonitor/NetworkState.Online.component1|component1(){}[0]
+        final fun component2(): kotlin/Boolean // dev.cacheoverflow.netmonitor/NetworkState.Online.component2|component2(){}[0]
+        final fun copy(dev.cacheoverflow.netmonitor/NetworkType = ..., kotlin/Boolean = ...): dev.cacheoverflow.netmonitor/NetworkState.Online // dev.cacheoverflow.netmonitor/NetworkState.Online.copy|copy(dev.cacheoverflow.netmonitor.NetworkType;kotlin.Boolean){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // dev.cacheoverflow.netmonitor/NetworkState.Online.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // dev.cacheoverflow.netmonitor/NetworkState.Online.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // dev.cacheoverflow.netmonitor/NetworkState.Online.toString|toString(){}[0]
+    }
+
+    final object CaptivePortal : dev.cacheoverflow.netmonitor/NetworkState // dev.cacheoverflow.netmonitor/NetworkState.CaptivePortal|null[0]
+
+    final object Offline : dev.cacheoverflow.netmonitor/NetworkState // dev.cacheoverflow.netmonitor/NetworkState.Offline|null[0]
+
+    final object Unknown : dev.cacheoverflow.netmonitor/NetworkState // dev.cacheoverflow.netmonitor/NetworkState.Unknown|null[0]
+}
+
+final fun dev.cacheoverflow.netmonitor/NetworkMonitor(): dev.cacheoverflow.netmonitor/NetworkMonitor // dev.cacheoverflow.netmonitor/NetworkMonitor|NetworkMonitor(){}[0]
