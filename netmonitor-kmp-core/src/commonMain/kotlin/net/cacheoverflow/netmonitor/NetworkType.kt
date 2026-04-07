@@ -16,18 +16,40 @@
 
 package net.cacheoverflow.netmonitor
 
+import androidx.compose.runtime.Immutable
+
 /**
- * @param literal the literal name of the network type
- *
  * @author Cedric Hammes
  * @since  07/04/2026
  */
-enum class NetworkType(private val literal: String) {
-    WIFI("WiFi"),
-    ETHERNET("Ethernet"),
-    BLUETOOTH("Bluetooth"),
-    CELLULAR("Cellular"),
-    UNKNOWN("Unknown");
+@Immutable
+sealed interface NetworkType {
+    object WiFi : NetworkType
+    object Ethernet : NetworkType
+    object Bluetooth : NetworkType
+    object Unknown : NetworkType
 
-    override fun toString(): String = literal
+    /**
+     * Represents a cellular network connection.
+     *
+     * Note: To read generation and carrier name, you need to apply the permission `android.permission.READ_PHONE_STATE` to your application
+     * and manually request the permission from the user. Otherwise, the generation field is unknown and the carrier name is null.
+     *
+     * @property generation the radio technology used (e.g. 5G, 4G). On Android, this data can be inaccurate.
+     * @property carrier    the name of the service provider (e.g. "T-Mobile")
+     *
+     * @author Cedric Hammes
+     * @since 07/04/2026
+     */
+    data class Cellular(val generation: Generation, val carrier: String?) : NetworkType {
+        enum class Generation(private val label: String) {
+            G2("2G"),
+            G3("3G"),
+            G4("4G"),
+            G5("5G"),
+            UNKNOWN("Unknown");
+
+            override fun toString(): String = label
+        }
+    }
 }

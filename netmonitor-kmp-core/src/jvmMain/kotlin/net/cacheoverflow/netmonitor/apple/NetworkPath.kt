@@ -30,10 +30,10 @@ internal class NetworkPath internal constructor(library: AppleNetworkLibrary, pr
     fun getStatus(): Status = Status.fromInt(getStatus.invokeExact(native) as Int)
     fun isExpensive(): Boolean = isExpensive.invokeExact(native) as Boolean
     fun getInterfaceType(): NetworkType = when {
-        usesInterfaceType.invokeExact(native, 1) as Boolean -> NetworkType.WIFI
-        usesInterfaceType.invokeExact(native, 2) as Boolean -> NetworkType.CELLULAR
-        usesInterfaceType.invokeExact(native, 3) as Boolean -> NetworkType.ETHERNET
-        else -> NetworkType.UNKNOWN
+        usesInterfaceType.invokeExact(native, 1) as Boolean -> NetworkType.WiFi
+        usesInterfaceType.invokeExact(native, 2) as Boolean -> NetworkType.Cellular(NetworkType.Cellular.Generation.UNKNOWN, null)
+        usesInterfaceType.invokeExact(native, 3) as Boolean -> NetworkType.Ethernet
+        else -> NetworkType.Unknown
     }
 
     enum class Status(val value: Int) {

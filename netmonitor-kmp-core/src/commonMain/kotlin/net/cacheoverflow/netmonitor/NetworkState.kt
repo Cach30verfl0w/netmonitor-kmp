@@ -24,6 +24,7 @@ import androidx.compose.runtime.Immutable
  */
 @Immutable
 sealed interface NetworkState {
+    @Immutable
     data class Online(val type: NetworkType, val isMetered: Boolean) : NetworkState
     object Offline : NetworkState
     object CaptivePortal : NetworkState

@@ -20,6 +20,19 @@
 * 🛠 **Detailed State:** Distinguishes between `Online`, `Offline`, `CaptivePortal`, and `Unknown`.
 * 📊 **Rich Metadata:** Access network types (WiFi, Ethernet, Cellular, etc.) and metered connection detection.
 
+| Capability | Linux | Windows | Apple | Android |
+|-|-|-|-|-|
+| Bluetooth (Type) | 🏗️ | 🏗️ | 🏗️ | ✅ |
+| Ethernet (Type) | ✅ | 🏗️ | ✅ | ✅ |
+| Cellular (Type) | ❌ | 🏗️ | ✅ | ✅ |
+| WIFI (Type) | ✅ | ❌ | ✅ | ✅ |
+| Cellular Generation | ❌ | ❌ | 🏗️ | ✅[^1][^2] |
+| Cellular Carrier | ❌ | ❌ | 🏗️ | ✅[^1] |
+[^1]: Due to limitations on Android, this data requires a permission request. Further information in the documentation about `NetworkType.Cellular`.
+[^2]: Information about the Bluetooth generation can be inaccurate
+
+
+
 ## 🛠 Usage
 
 The `NetworkMonitor` provides a reactive way to handle connectivity. Since it implements `AutoCloseable`, it fits perfectly into lifecycle-managed components like ViewModels.
@@ -28,7 +41,7 @@ The `NetworkMonitor` provides a reactive way to handle connectivity. Since it im
 If you just want to listen to changes in a simple coroutine scope:
 
 ```kotlin
-val monitor = NetworkMonitor(applicationContext) // Or NetworkMonitor() for non-Android
+val monitor = NetworkMonitor { applicationContext } // Or NetworkMonitor() for non-Android
 val scope = CoroutineScope(Dispatchers.Main)
 
 scope.launch {

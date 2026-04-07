@@ -16,11 +16,16 @@
 
 package net.cacheoverflow.netmonitor
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.os.Build
+import android.telephony.TelephonyManager
+import android.util.Log
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -34,7 +39,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
  * @author Cedric Hammes
  * @since  07/04/2026
  */
-fun NetworkMonitor(context: Context): NetworkMonitor = AndroidNetworkMonitor(context)
+fun NetworkMonitor(contextGetter: () -> Context): NetworkMonitor = AndroidNetworkMonitor(contextGetter)
 
 /**
  * @param context the android application's context for the connectivity manager
@@ -42,8 +47,9 @@ fun NetworkMonitor(context: Context): NetworkMonitor = AndroidNetworkMonitor(con
  * @author Cedric Hammes
  * @since  07/04/2026
  */
-private class AndroidNetworkMonitor(context: Context) : NetworkMonitor {
-    private val connectivityManager: ConnectivityManager = context.getSystemService(ConnectivityManager::class.java)
+private class AndroidNetworkMonitor(private val getContext: () -> Context) : NetworkMonitor {
+    private val connectivityManager: ConnectivityManager = getContext().getSystemService(ConnectivityManager::class.java)
+    private val telephonyManager: TelephonyManager = getContext().getSystemService(TelephonyManager::class.java)
 
     override val isAvailable: Boolean = true
     override val state: Flow<NetworkState> = callbackFlow {
@@ -65,7 +71,39 @@ private class AndroidNetworkMonitor(context: Context) : NetworkMonitor {
         val capabilities = capabilities
             ?: ((network ?: connectivityManager.activeNetwork)?.let { connectivityManager.getNetworkCapabilities(it) })
             ?: return NetworkState.Offline // When no capabilities can be acquired, we are offline
-        return getNetworkStateFromCapabilities(capabilities)
+
+        return getNetworkStateFromCapabilities(capabilities) {
+            when {
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> NetworkType.Bluetooth
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> getCellularInformation()
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> NetworkType.Ethernet
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WiFi
+                else -> NetworkType.Unknown
+            }
+        }
+    }
+
+    private fun getCellularInformation(): NetworkType.Cellular {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            Log.w("AndroidNetworkMonitor", "Unable to read information of cellular information because of old device version")
+            return NetworkType.Cellular(NetworkType.Cellular.Generation.UNKNOWN, null)
+        }
+
+        if (getContext().checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            Log.w("AndroidNetworkMonitor", "Unable to read information of cellular network because of missing permissions")
+            return NetworkType.Cellular(NetworkType.Cellular.Generation.UNKNOWN, null)
+        }
+
+        return NetworkType.Cellular(
+            carrier = telephonyManager.networkOperatorName.takeIf { it.isNotBlank() },
+            generation = when (telephonyManager.dataNetworkType) {
+                TelephonyManager.NETWORK_TYPE_NR -> NetworkType.Cellular.Generation.G5
+                TelephonyManager.NETWORK_TYPE_LTE -> NetworkType.Cellular.Generation.G4
+                TelephonyManager.NETWORK_TYPE_HSDPA, TelephonyManager.NETWORK_TYPE_HSPAP -> NetworkType.Cellular.Generation.G3
+                TelephonyManager.NETWORK_TYPE_EDGE, TelephonyManager.NETWORK_TYPE_GPRS -> NetworkType.Cellular.Generation.G2
+                else -> NetworkType.Cellular.Generation.UNKNOWN
+            }
+        )
     }
 
     /**

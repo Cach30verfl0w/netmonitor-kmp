@@ -82,11 +82,11 @@ internal class DBusNetworkMonitor : NetworkMonitor {
             reply.iterator.recurse()?.readString()?.let {
                 Result.success(
                     when (it) {
-                        "802-3-ethernet" -> NetworkType.ETHERNET
-                        "802-11-wireless" -> NetworkType.WIFI
-                        "gsm", "cdma" -> NetworkType.CELLULAR
-                        "bluetooth" -> NetworkType.BLUETOOTH
-                        else -> NetworkType.UNKNOWN
+                        "802-3-ethernet" -> NetworkType.Ethernet
+                        "802-11-wireless" -> NetworkType.WiFi
+                        "gsm", "cdma" -> NetworkType.Cellular(NetworkType.Cellular.Generation.UNKNOWN, null)
+                        "bluetooth" -> NetworkType.Bluetooth
+                        else -> NetworkType.Unknown
                     }
                 )
             } ?: return Result.failure(RuntimeException("Unable to read primary connection type"))
