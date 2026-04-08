@@ -36,6 +36,10 @@ import platform.Network.nw_path_status_unsatisfied
 import platform.Network.nw_path_uses_interface_type
 import platform.darwin.dispatch_queue_create
 
+expect class CellularInformationFactory() {
+    fun create(): NetworkType.Cellular
+}
+
 /**
  * @author Cedric Hammes
  * @since  07/04/2026
@@ -43,7 +47,9 @@ import platform.darwin.dispatch_queue_create
 internal class AppleNetworkMonitor : NetworkMonitor {
     private val _state: MutableStateFlow<NetworkState> = MutableStateFlow(NetworkState.Unknown)
     private val monitorQueue = dispatch_queue_create("de.cacheoverflow.netmonitor.queue", null)
+    private val cellularFactory: CellularInformationFactory = CellularInformationFactory()
     private val pathMonitor: nw_path_monitor_t = nw_path_monitor_create()
+
     override val state: Flow<NetworkState> = _state.asStateFlow()
     override val isAvailable: Boolean = true
 
@@ -54,8 +60,7 @@ internal class AppleNetworkMonitor : NetworkMonitor {
             val networkType = when {
                 nw_path_uses_interface_type(networkPath, nw_interface_type_wifi) -> NetworkType.WiFi
                 nw_path_uses_interface_type(networkPath, nw_interface_type_wired) -> NetworkType.Ethernet
-                nw_path_uses_interface_type(networkPath, nw_interface_type_cellular) ->
-                    NetworkType.Cellular(NetworkType.Cellular.Generation.UNKNOWN, null)
+                nw_path_uses_interface_type(networkPath, nw_interface_type_cellular) -> cellularFactory.create()
                 else -> NetworkType.Unknown
             }
 
