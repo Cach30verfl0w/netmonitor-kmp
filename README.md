@@ -20,14 +20,15 @@
 * 🛠 **Detailed State:** Distinguishes between `Online`, `Offline`, `CaptivePortal`, and `Unknown`.
 * 📊 **Rich Metadata:** Access network types (WiFi, Ethernet, Cellular, etc.) and metered connection detection.
 
-| Capability          | Linux | Windows | macOS  | iOS    | Android   |
-|---------------------|-------|---------|--------|--------|-----------|
-| Bluetooth (Type)    | 🏗️   | 🏗️     | ❌️[^3] | ❌️[^3] | ✅         |
-| Ethernet (Type)     | ✅     | 🏗️     | ✅      | ✅      | ✅         |
-| Cellular (Type)     | ❌     | 🏗️     | ✅      | ✅      | ✅         |
-| WIFI (Type)         | ✅     | ❌       | ✅      | ✅      | ✅         |
-| Cellular Generation | ❌     | ❌       | ❌️     | ✅      | ✅[^1][^2] |
-| Cellular Carrier    | ❌     | ❌       | ❌️     | ✅      | ✅[^1]     |
+| Capability            | Linux | Windows | macOS  | iOS    | Android   |
+|-----------------------|-------|---------|--------|--------|-----------|
+| Bluetooth (Type)      | ✅️    | 🏗️     | ❌️[^3] | ❌️[^3] | ✅         |
+| Ethernet (Type)       | ✅     | 🏗️     | ✅      | ✅      | ✅         |
+| Cellular (Type)       | ❌     | 🏗️     | ✅      | ✅      | ✅         |
+| Captive Portal (Type) | 🏗️   | 🏗️     | 🏗️    | 🏗️    | ✅️        |
+| WIFI (Type)           | ✅     | ❌       | ✅      | ✅      | ✅         |
+| Cellular Generation   | ❌     | ❌       | ❌️     | ✅      | ✅[^1][^2] |
+| Cellular Carrier      | ❌     | ❌       | ❌️     | ✅      | ✅[^1]     |
 
 [^1]: Due to limitations on Android, this data requires a permission request. Further information in the documentation about `NetworkType.Cellular`.
 [^2]: Information about the Bluetooth generation can be inaccurate

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2026 Cedric Hammes
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.cacheoverflow.netmonitor.dbus
+package net.cacheoverflow.netmonitor.dbus.wrapper
 
 /**
  * All possible states of the network manager.
@@ -23,6 +23,9 @@ package net.cacheoverflow.netmonitor.dbus
  * network state for detecting changes. (like disconnect or general connectivity change)
  *
  * @see <a href="https://people.freedesktop.org/~lkundrak/nm-dbus-api/nm-dbus-types.html">NetworkManager D-Bus API Types</a>
+ *
+ * @author Cedric Hammes
+ * @since  04.04.2026
  */
 internal enum class NetworkManagerState(private val value: Int, private val literal: String, val isConnected: Boolean) {
     UNKNOWN(0, "Unknown", false),

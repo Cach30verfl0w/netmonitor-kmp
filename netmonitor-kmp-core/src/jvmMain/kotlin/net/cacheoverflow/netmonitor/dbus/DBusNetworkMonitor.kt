@@ -18,13 +18,14 @@ package net.cacheoverflow.netmonitor.dbus
 
 import net.cacheoverflow.netmonitor.NetworkMonitor
 import net.cacheoverflow.netmonitor.NetworkState
-import net.cacheoverflow.netmonitor.NetworkType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import net.cacheoverflow.netmonitor.dbus.util.MatchRule
+import net.cacheoverflow.netmonitor.dbus.wrapper.DBusNetworkManager
+import net.cacheoverflow.netmonitor.dbus.wrapper.NetworkManagerState
 import java.lang.foreign.Arena
-import kotlin.use
 
 internal class DBusNetworkMonitor : NetworkMonitor {
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -42,12 +43,18 @@ internal class DBusNetworkMonitor : NetworkMonitor {
             appendString("org.freedesktop.NetworkManager")
             appendString("State")
         }?.getOrNull()?.let { reply ->
-            updateNetworkStatus(connection, requireNotNull(reply.iterator.recurse()))
+            updateNetworkStatus(
+                networkManager = DBusNetworkManager(connection),
+                iterator = requireNotNull(reply.iterator.recurse())
+            )
         }
 
         connection?.addMatchRule(MatchRule.NETWORK_MANAGER_STATE_CHANGED)
         connection?.addFilter { connection, message ->
-            updateNetworkStatus(connection, message.iterator)
+            updateNetworkStatus(
+                networkManager = DBusNetworkManager(connection),
+                iterator = message.iterator
+            )
             return@addFilter true
         }
     }
@@ -57,51 +64,18 @@ internal class DBusNetworkMonitor : NetworkMonitor {
         nativeLibrary?.close()
     }
 
-    private fun updateNetworkStatus(connection: DBusConnection, iterator: DBusMessageIterator) {
+    private fun updateNetworkStatus(networkManager: DBusNetworkManager, iterator: DBusMessageIterator) {
         val networkState = NetworkManagerState.fromInt(requireNotNull(iterator.readInt()))
         when {
             networkState.isConnected -> {
-                val networkType = connection.readPrimaryConnectionType().getOrThrow()
-                val isMetered = connection.isNetworkMetered().getOrThrow()
+                val networkType = networkManager.readPrimaryConnectionType().getOrThrow()
+                val isMetered = networkManager.isNetworkMetered().getOrThrow()
                 state.value = NetworkState.Online(networkType, isMetered)
             }
 
             networkState == NetworkManagerState.DISCONNECTED || networkState == NetworkManagerState.ASLEEP -> {
                 state.value = NetworkState.Offline
             }
-        }
-    }
-
-    private fun DBusConnection.readPrimaryConnectionType(): Result<NetworkType> {
-        val reply = call(MethodCall.GET_NETWORK_MANAGER_PROPERTIES) {
-            appendString("org.freedesktop.NetworkManager")
-            appendString("PrimaryConnectionType")
-        }.getOrNull() ?: return Result.failure(RuntimeException("Unable to read primary connection type"))
-
-        return reply.use { reply ->
-            reply.iterator.recurse()?.readString()?.let {
-                Result.success(
-                    when (it) {
-                        "802-3-ethernet" -> NetworkType.Ethernet
-                        "802-11-wireless" -> NetworkType.WiFi
-                        "gsm", "cdma" -> NetworkType.Cellular(NetworkType.Cellular.Generation.UNKNOWN, null)
-                        "bluetooth" -> NetworkType.Bluetooth
-                        else -> NetworkType.Unknown
-                    }
-                )
-            } ?: return Result.failure(RuntimeException("Unable to read primary connection type"))
-        }
-    }
-
-    private fun DBusConnection.isNetworkMetered(): Result<Boolean> {
-        val reply = call(MethodCall.GET_NETWORK_MANAGER_PROPERTIES) {
-            appendString("org.freedesktop.NetworkManager")
-            appendString("Metered")
-        }.getOrNull() ?: return Result.failure(RuntimeException("Unable to read metering info"))
-
-        return reply.use { reply ->
-            reply.iterator.recurse()?.readInt()?.let { Result.success(it.rem(4) != 0) }
-                ?: return Result.failure(RuntimeException("Unable to read metering info"))
         }
     }
 }

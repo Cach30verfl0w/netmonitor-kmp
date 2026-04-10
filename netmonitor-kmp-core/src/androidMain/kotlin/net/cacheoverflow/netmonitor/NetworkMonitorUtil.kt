@@ -17,10 +17,8 @@
 package net.cacheoverflow.netmonitor
 
 import android.net.NetworkCapabilities
-import android.telephony.TelephonyManager
 
 /**
- * @param telephonyManager the Android's telephony manager used if transport type is cellular
  * @param capabilities     the current network's capabilities
  * @return                 the current network's state
  *
