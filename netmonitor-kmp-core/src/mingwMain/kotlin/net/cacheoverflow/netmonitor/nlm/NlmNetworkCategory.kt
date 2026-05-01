@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-package net.cacheoverflow.netmonitor
+package net.cacheoverflow.netmonitor.nlm
 
-import net.cacheoverflow.netmonitor.dbus.DBusSharedLibrary
-
-actual fun NetworkMonitor(): NetworkMonitor = DBusNetworkMonitor(DBusSharedLibrary.open().getOrThrow())
+/**
+ * [NLM_NETWORK_CATEGORY on MSDN](https://learn.microsoft.com/en-us/windows/win32/api/netlistmgr/ne-netlistmgr-nlm_network_category)
+ *
+ * @author Alexander Hinze
+ * @since 01/05/2026
+ */
+internal object NlmNetworkCategory {
+    // @formatter:off
+    const val PUBLIC: Int               = 0x0
+    const val PRIVATE: Int              = 0x1
+    const val DOMAIN_AUTHENTICATED: Int = 0x2
+    // @formatter:on
+}

@@ -13,11 +13,10 @@ plugins {
     alias(libs.plugins.mavenPublish)
 }
 
-
 kotlin {
     jvmToolchain(libs.versions.jvmTarget.get().toInt())
     androidTarget()
-    listOf(iosSimulatorArm64(), iosArm64(), iosX64(), linuxX64(), linuxArm64(), macosArm64()).forEach {
+    listOf(iosSimulatorArm64(), iosArm64(), iosX64(), linuxX64(), linuxArm64(), macosArm64(), mingwX64()).forEach {
         it.binaries.sharedLib()
     }
 
@@ -29,18 +28,15 @@ kotlin {
 
     applyDefaultHierarchyTemplate {
         common {
+            group("native") {
+                withLinux()
+                withMingw()
+                group("ios") { withIos() }
+                group("macos") { withMacos() }
+            }
             group("nonAndroid") {
                 withJvm()
-                group("native") {
-                    group("linux") {
-                        withLinuxX64()
-                        withLinuxArm64()
-                    }
-                    group("apple") {
-                        withIos()
-                        withMacos()
-                    }
-                }
+                group("native")
             }
         }
     }
@@ -65,6 +61,11 @@ kotlin {
             dependencies {
                 implementation(libs.compose.runtime.annotations)
                 api(libs.kotlinx.coroutines.core)
+            }
+        }
+        mingwMain {
+            dependencies {
+                implementation(libs.comInterop.core)
             }
         }
     }

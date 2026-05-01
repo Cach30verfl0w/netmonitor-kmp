@@ -37,15 +37,15 @@ sealed interface NetworkState {
         }
     }
 
-    object Offline : NetworkState {
+    data object Offline : NetworkState {
         override fun asPacked(): Int = 0b0000_00010_0000_0000
     }
 
-    object CaptivePortal : NetworkState {
+    data object CaptivePortal : NetworkState {
         override fun asPacked(): Int = 0b0000_00011_0000_0000
     }
 
-    object Unknown : NetworkState {
+    data object Unknown : NetworkState {
         override fun asPacked(): Int = 0b0000_00100_0000_0000
     }
 
