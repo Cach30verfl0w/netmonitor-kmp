@@ -31,13 +31,15 @@ kotlin {
         common {
             group("nonAndroid") {
                 withJvm()
-                group("linux") {
-                    withLinuxX64()
-                    withLinuxArm64()
-                }
-                group("apple") {
-                    withIos()
-                    withMacos()
+                group("native") {
+                    group("linux") {
+                        withLinuxX64()
+                        withLinuxArm64()
+                    }
+                    group("apple") {
+                        withIos()
+                        withMacos()
+                    }
                 }
             }
         }

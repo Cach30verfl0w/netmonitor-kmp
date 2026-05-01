@@ -17,6 +17,7 @@
 package net.cacheoverflow.netmonitor
 
 import androidx.compose.runtime.Immutable
+import kotlin.jvm.JvmStatic
 
 /**
  * @author Cedric Hammes
@@ -24,9 +25,45 @@ import androidx.compose.runtime.Immutable
  */
 @Immutable
 sealed interface NetworkState {
+    fun asPacked(): Int
+
     @Immutable
-    data class Online(val isMetered: Boolean, val canReachRemoteDevices: Boolean) : NetworkState
-    object Offline : NetworkState
-    object CaptivePortal : NetworkState
-    object Unknown : NetworkState
+    data class Online(val isMetered: Boolean, val canReachRemoteDevices: Boolean) : NetworkState {
+        override fun asPacked(): Int {
+            var value = 0b0000_0001_0000_0000
+            if (isMetered) value = value or (1 shl 7)
+            if (canReachRemoteDevices) value = value or (1 shl 6)
+            return value
+        }
+    }
+
+    object Offline : NetworkState {
+        override fun asPacked(): Int = 0b0000_00010_0000_0000
+    }
+
+    object CaptivePortal : NetworkState {
+        override fun asPacked(): Int = 0b0000_00011_0000_0000
+    }
+
+    object Unknown : NetworkState {
+        override fun asPacked(): Int = 0b0000_00100_0000_0000
+    }
+
+    companion object {
+        @JvmStatic
+        fun fromPacked(value: Int): NetworkState {
+            val id = (value shr 8) and 0xFF
+
+            return when (id) {
+                1 -> {
+                    val isMetered = (value and (1 shl 7)) != 0
+                    val canReachRemoteDevices = (value and (1 shl 6)) != 0
+                    Online(isMetered, canReachRemoteDevices)
+                }
+                2 -> Offline
+                3 -> CaptivePortal
+                else -> Unknown
+            }
+        }
+    }
 }

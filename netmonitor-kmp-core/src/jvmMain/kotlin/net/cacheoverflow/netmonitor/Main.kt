@@ -16,9 +16,12 @@
 
 package net.cacheoverflow.netmonitor
 
-object Main {
-}
-
 fun main(args: Array<String>) {
-    println(Main::class.java.getResourceAsStream("/netmonitor-binaries/linux_arm64.so"))
+    NetworkMonitor().registerCallback {
+        println(it)
+    }
+
+    while (true) {
+
+    }
 }

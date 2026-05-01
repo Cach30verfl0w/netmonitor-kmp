@@ -16,4 +16,4 @@
 
 package net.cacheoverflow.netmonitor
 
-actual fun NetworkMonitor(): NetworkMonitor = TODO()
+actual fun NetworkMonitor(): NetworkMonitor = requireNotNull(JvmNetworkMonitor.tryInit())
