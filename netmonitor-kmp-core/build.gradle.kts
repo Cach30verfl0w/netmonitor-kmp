@@ -33,6 +33,10 @@ kotlin {
                     withLinuxX64()
                     withLinuxArm64()
                 }
+                group("apple") {
+                    withIos()
+                    withMacos()
+                }
             }
         }
     }
