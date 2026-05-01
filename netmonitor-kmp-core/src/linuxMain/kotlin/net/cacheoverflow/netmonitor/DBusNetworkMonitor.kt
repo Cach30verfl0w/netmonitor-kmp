@@ -61,10 +61,15 @@ internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : Abst
             }
         }
 
+        getProperty("State") { computeNetworkState(it) }.getOrNull()?.let { networkState ->
+            notifyCallbacksNoDelay(networkState)
+        }
+
         connection.addMatch(DBusMatchRule.NETWORK_MANAGER_STATE_CHANGED)
         connection.addFilter { _, message ->
             message.allocateIteratorWithPlacement(true, nativeHeap).use { iterator ->
                 val networkStatus = computeNetworkState(iterator) ?: return@use
+                println(networkStatus)
                 notifyCallbacksNoDelay(networkStatus)
             }
 
