@@ -1,8 +1,9 @@
 [versions]
 netmonitor = "1.0.0" # https://github.com/Cach30verfl0w/netmonitor-kmp/releases
-kotlin = "2.3.20" # https://github.com/JetBrains/kotlin/releases
-jvmTarget = "23"
+kotlin = "2.3.21" # https://github.com/JetBrains/kotlin/releases
+jvmTarget = "21"
 
+comInterop = "1.1.0" # https://github.com/karmakrafts/COMInterop/releases
 kotlinx-coroutines = "1.10.2" # https://github.com/Kotlin/kotlinx.coroutines/releases
 composeMultiplatform = "1.10.3" # https://github.com/JetBrains/compose-multiplatform/releases
 mavenPublish = "0.36.0" # https://github.com/vanniktech/gradle-maven-publish-plugin/releases
@@ -17,10 +18,10 @@ android-minSdk = "23"
 material3 = "1.10.0-alpha05" # https://github.com/JetBrains/compose-multiplatform/releases
 androidx-activity = "1.13.0" # https://developer.android.com/jetpack/androidx/releases/activity
 
-
 [libraries]
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 compose-runtime-annotations = { group = "androidx.compose.runtime", name = "runtime-annotation", version.ref = "composeMultiplatform" }
+comInterop-core = { group = "dev.karmakrafts.cominterop", name = "cominterop-core", version.ref = "comInterop" }
 
 # Example App
 compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "composeMultiplatform" }

@@ -16,4 +16,6 @@
 
 package net.cacheoverflow.netmonitor
 
-actual fun NetworkMonitor(): NetworkMonitor = DBusNetworkMonitor(TODO())
+import net.cacheoverflow.netmonitor.dbus.DBusSharedLibrary
+
+actual fun NetworkMonitor(): NetworkMonitor = DBusNetworkMonitor(DBusSharedLibrary.open().getOrThrow())

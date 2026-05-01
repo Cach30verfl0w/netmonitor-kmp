@@ -40,7 +40,7 @@ fun disposeNetworkMonitor(addr: COpaquePointer) {
 @CName("netmonitor_network_monitor_register_callback")
 fun registerNetworkMonitorCallback(handle: COpaquePointer, closure: CPointer<CallbackFunction>): COpaquePointer {
     val networkMonitor = handle.asStableRef<NetworkMonitor>().get()
-    val callback = NetworkMonitor.Callback { newNetworkState ->
+    val callback = NetworkStateCallback { newNetworkState ->
         closure.invoke(newNetworkState.asPacked())
     }
 
@@ -51,7 +51,7 @@ fun registerNetworkMonitorCallback(handle: COpaquePointer, closure: CPointer<Cal
 @CName("netmonitor_network_monitor_unregister_callback")
 fun unregisterNetworkMonitorCallback(handle: COpaquePointer, callback: COpaquePointer) {
     val networkMonitor = handle.asStableRef<NetworkMonitor>().get()
-    val callback = callback.asStableRef<NetworkMonitor.Callback>()
+    val callback = callback.asStableRef<NetworkStateCallback>()
     networkMonitor.unregisterCallback(callback.get())
     callback.dispose()
 }

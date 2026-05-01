@@ -16,12 +16,4 @@
 
 package net.cacheoverflow.netmonitor
 
-import androidx.compose.runtime.Stable
-
-/**
- * @author Cedric Hammes
- * @since  07/04/2026
- */
-@Stable
-interface NetworkMonitor : Observable, AutoCloseable
-
+actual fun NetworkMonitor(): NetworkMonitor = NlmNetworkMonitor()

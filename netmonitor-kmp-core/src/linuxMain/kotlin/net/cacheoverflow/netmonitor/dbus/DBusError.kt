@@ -34,7 +34,6 @@ internal class DBusError(rawPointer: NativePtr) : CStructVar(rawPointer) {
 
     @Suppress("DEPRECATION")
     companion object : Type(
-        size = (Int.SIZE_BYTES * 4 + Long.SIZE_BYTES * 3).toLong(),
-        align = alignOf<COpaquePointerVar>()
+        size = (Int.SIZE_BYTES * 4 + Long.SIZE_BYTES * 3).toLong(), align = alignOf<COpaquePointerVar>()
     )
 }

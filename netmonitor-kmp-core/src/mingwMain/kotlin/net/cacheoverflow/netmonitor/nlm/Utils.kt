@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package net.cacheoverflow.netmonitor
+package net.cacheoverflow.netmonitor.nlm
 
-import androidx.compose.runtime.Stable
+import platform.windows.HRESULT
+import platform.windows.S_OK
 
 /**
- * @author Cedric Hammes
- * @since  07/04/2026
+ * @author Alexander Hinze
+ * @since 01/05/2026
  */
-@Stable
-interface NetworkMonitor : Observable, AutoCloseable
 
+internal inline fun HRESULT.checkResult(crossinline message: () -> String) {
+    check(this == S_OK) { "${message()}: 0x${toHexString()}" }
+}

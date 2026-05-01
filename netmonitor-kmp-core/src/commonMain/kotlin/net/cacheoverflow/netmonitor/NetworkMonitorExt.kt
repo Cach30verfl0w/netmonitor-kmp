@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
 fun NetworkMonitor.newCallbackFlow(): Flow<NetworkState> = callbackFlow {
-    val callback = NetworkMonitor.Callback { newState ->
+    val callback = NetworkStateCallback { newState ->
         trySend(newState)
     }
 

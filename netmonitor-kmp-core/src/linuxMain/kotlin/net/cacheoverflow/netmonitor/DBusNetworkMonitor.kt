@@ -42,7 +42,7 @@ import kotlin.time.Duration.Companion.seconds
  * @since  28/04/2026
  */
 @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class, ExperimentalAtomicApi::class)
-internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : AbstractObservable<NetworkMonitor.Callback>(), NetworkMonitor {
+internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : AbstractObservable(), NetworkMonitor {
     private val connection: DBusConnection = library.createConnection(EnumBusType.SYSTEM).getOrThrow()
     private val isClosed: AtomicBoolean = AtomicBoolean(false)
 
@@ -61,15 +61,16 @@ internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : Abst
             }
         }
 
+        getProperty("State") { computeNetworkState(it) }.getOrNull()?.let { networkState ->
+            notifyCallbacksNoDelay(networkState)
+        }
+
         connection.addMatch(DBusMatchRule.NETWORK_MANAGER_STATE_CHANGED)
         connection.addFilter { _, message ->
             message.allocateIteratorWithPlacement(true, nativeHeap).use { iterator ->
-                val networkStatus = computeNetworkState(iterator)
-                    ?: return@use
-
-                notifyCallbacks { callback ->
-                    callback.networkStateChanged(networkStatus)
-                }
+                val networkStatus = computeNetworkState(iterator) ?: return@use
+                println(networkStatus)
+                notifyCallbacksNoDelay(networkStatus)
             }
 
             false
@@ -77,8 +78,7 @@ internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : Abst
     }
 
     override fun close() = runBlocking {
-        if (isClosed.compareAndExchange(expectedValue = false, newValue = true))
-            return@runBlocking
+        if (isClosed.compareAndExchange(expectedValue = false, newValue = true)) return@runBlocking
 
         supervisorJob.join()
         this@DBusNetworkMonitor.coroutineContext.close()
@@ -86,41 +86,32 @@ internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : Abst
         library.close()
     }
 
-    override fun registerCallback(callback: NetworkMonitor.Callback) {
-        getProperty("State") { computeNetworkState(it) }.getOrNull()?.let { networkState ->
-            callback.networkStateChanged(networkState)
-        }
-
-        super.registerCallback(callback)
-    }
-
     private fun <T> getProperty(name: String, closure: (DBusMessage.Iterator) -> T): Result<T> = memScoped {
-        library.allocateMessage("org.freedesktop.NetworkManager", "org.freedesktop.DBus.Properties", "Get").use { request ->
-            request.allocateIterator(false).use { requestIterator ->
-                requestIterator.appendString("org.freedesktop.NetworkManager")
-                requestIterator.appendString(name)
-            }
-
-            connection.sendWithReplyAndBlock(request, 10.seconds).fold(
-                onFailure = { Result.failure(it) },
-                onSuccess = { response ->
-                    response.use { response ->
-                        response.allocateIterator(true, nativeHeap).let { responseIterator ->
-                            responseIterator.recurse()?.let { Result.success(closure(it)) }
-                                ?: Result.failure(IllegalArgumentException("Unable to create content iterator"))
-                        }
-                    }
+        library.allocateMessage("org.freedesktop.NetworkManager", "org.freedesktop.DBus.Properties", "Get")
+            .use { request ->
+                request.allocateIterator(false).use { requestIterator ->
+                    requestIterator.appendString("org.freedesktop.NetworkManager")
+                    requestIterator.appendString(name)
                 }
-            )
-        }
+
+                connection.sendWithReplyAndBlock(request, 10.seconds)
+                    .fold(onFailure = { Result.failure(it) }, onSuccess = { response ->
+                        response.use { response ->
+                            response.allocateIterator(true, nativeHeap).let { responseIterator ->
+                                responseIterator.recurse()?.let { Result.success(closure(it)) } ?: Result.failure(
+                                    IllegalArgumentException("Unable to create content iterator")
+                                )
+                            }
+                        }
+                    })
+            }
     }
 
-    private fun isConnectionMetered(): Result<Boolean> =
-        getProperty("Metered") { iterator ->
-            iterator.readUInt()?.rem(4U)?.let { value ->
-                value != 0U
-            } ?: false
-        }
+    private fun isConnectionMetered(): Result<Boolean> = getProperty("Metered") { iterator ->
+        iterator.readUInt()?.rem(4U)?.let { value ->
+            value != 0U
+        } ?: false
+    }
 
     private fun computeNetworkState(messageIterator: DBusMessage.Iterator): NetworkState? {
         val networkState = messageIterator.readUInt()?.let { NetworkManagerState.fromInt(it.toInt()) } ?: return null

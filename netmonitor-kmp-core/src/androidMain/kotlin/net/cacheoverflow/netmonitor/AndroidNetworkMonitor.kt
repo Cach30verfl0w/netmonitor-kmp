@@ -21,7 +21,6 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 fun NetworkMonitor(contextGetter: () -> Context): NetworkMonitor = AndroidNetworkMonitor(contextGetter)
@@ -31,14 +30,10 @@ fun NetworkMonitor(contextGetter: () -> Context): NetworkMonitor = AndroidNetwor
  * @since  07/04/2026
  */
 @OptIn(ExperimentalAtomicApi::class)
-private class AndroidNetworkMonitor(getContext: () -> Context) : AbstractObservable<NetworkMonitor.Callback>(), NetworkMonitor {
+private class AndroidNetworkMonitor(getContext: () -> Context) : AbstractObservable(), NetworkMonitor {
     private val connectivityManager: ConnectivityManager = getContext().getSystemService(ConnectivityManager::class.java)
-    private var currentState: AtomicReference<NetworkState> = AtomicReference(determineNetworkState())
     private val networkStateCallback: NetworkStateCallback = NetworkStateCallback { newState ->
-        currentState.store(newState)
-        notifyCallbacks { callback ->
-            callback.networkStateChanged(newState)
-        }
+        notifyCallbacksNoDelay(newState)
     }
 
     init {
@@ -46,17 +41,15 @@ private class AndroidNetworkMonitor(getContext: () -> Context) : AbstractObserva
         connectivityManager.registerNetworkCallback(request, networkStateCallback)
     }
 
-    override fun registerCallback(callback: NetworkMonitor.Callback) {
-        callback.networkStateChanged(currentState.load())
-        super.registerCallback(callback)
-    }
-
     override fun close() = connectivityManager.unregisterNetworkCallback(networkStateCallback)
 
-    private fun determineNetworkState(network: Network? = null, capabilities: NetworkCapabilities? = null): NetworkState {
-        val capabilities = capabilities
-            ?: ((network ?: connectivityManager.activeNetwork)?.let { connectivityManager.getNetworkCapabilities(it) })
-            ?: return NetworkState.Offline // When no capabilities can be acquired, we are offline
+    private fun determineNetworkState(
+        network: Network? = null,
+        capabilities: NetworkCapabilities? = null
+    ): NetworkState {
+        val capabilities = capabilities ?: ((network
+            ?: connectivityManager.activeNetwork)?.let { connectivityManager.getNetworkCapabilities(it) })
+        ?: return NetworkState.Offline // When no capabilities can be acquired, we are offline
 
         return getNetworkStateFromCapabilities(capabilities)
     }

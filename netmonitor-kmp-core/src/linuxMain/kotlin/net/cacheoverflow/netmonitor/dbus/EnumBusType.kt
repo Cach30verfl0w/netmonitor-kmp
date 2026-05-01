@@ -25,7 +25,5 @@ package net.cacheoverflow.netmonitor.dbus
  * @see [DBusBusType, D-Bus: Shared constants](https://dbus.freedesktop.org/doc/api/html/group__DBusShared.html#ga980320deb96476bee7555edcdebc3528)
  */
 internal enum class EnumBusType(internal val value: Int) {
-    SESSION(0),
-    SYSTEM(1),
-    STARTER(2);
+    SESSION(0), SYSTEM(1), STARTER(2);
 }

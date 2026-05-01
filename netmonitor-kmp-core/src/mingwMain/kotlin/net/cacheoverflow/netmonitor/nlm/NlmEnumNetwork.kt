@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package net.cacheoverflow.netmonitor
-
-import androidx.compose.runtime.Stable
+package net.cacheoverflow.netmonitor.nlm
 
 /**
- * @author Cedric Hammes
- * @since  07/04/2026
+ * [NLM_ENUM_NETWORK on MSDN](https://learn.microsoft.com/en-us/windows/win32/api/netlistmgr/ne-netlistmgr-nlm_enum_network)
+ *
+ * @author Alexander Hinze
+ * @since 01/05/2026
  */
-@Stable
-interface NetworkMonitor : Observable, AutoCloseable
-
+internal object NlmEnumNetwork {
+    // @formatter:off
+    const val CONNECTED: Int    = 0x1
+    const val DISCONNECTED: Int = 0x2
+    const val ALL: Int          = 0x3
+    // @formatter:on
+}
