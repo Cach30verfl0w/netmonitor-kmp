@@ -33,7 +33,7 @@ import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 @OptIn(ExperimentalAtomicApi::class)
-internal class AppleNetworkMonitor : AbstractObservable<NetworkMonitor.Callback>(), NetworkMonitor {
+internal class AppleNetworkMonitor : AbstractObservable(), NetworkMonitor {
     private val monitor = nw_path_monitor_create()
     private val isClosed: AtomicBoolean = AtomicBoolean(false)
     private val networkQueue: dispatch_queue_t = dispatch_queue_create(
@@ -45,11 +45,7 @@ internal class AppleNetworkMonitor : AbstractObservable<NetworkMonitor.Callback>
         nw_path_monitor_set_queue(monitor, networkQueue)
         nw_path_monitor_set_update_handler(monitor) { path ->
             if (isClosed.load() || path == null) return@nw_path_monitor_set_update_handler
-
-            val newState = mapPathToNetworkState(path)
-            notifyCallbacks { callback ->
-                callback.networkStateChanged(newState)
-            }
+            notifyCallbacksNoDelay(mapPathToNetworkState(path))
         }
 
         nw_path_monitor_start(monitor)

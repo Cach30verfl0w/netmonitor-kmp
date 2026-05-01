@@ -17,28 +17,62 @@
 package net.cacheoverflow.netmonitor
 
 import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.internal.SynchronizedObject
 import kotlinx.coroutines.internal.synchronized
+import kotlin.concurrent.atomics.AtomicReference
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
-interface Observable<T> {
-    fun registerCallback(callback: T)
-    fun unregisterCallback(callback: T)
+interface Observable {
+    fun registerCallback(callback: NetworkStateCallback)
+    fun unregisterCallback(callback: NetworkStateCallback)
 }
 
-@OptIn(InternalCoroutinesApi::class)
-internal abstract class AbstractObservable<T> : Observable<T> {
-    private val lock: SynchronizedObject = SynchronizedObject()
-    protected val callbacks: ArrayList<T> = ArrayList()
+fun interface NetworkStateCallback {
+    fun networkStateChanged(state: NetworkState)
+}
 
-    override fun registerCallback(callback: T): Unit = synchronized(lock) {
-        if (!callbacks.contains(callback)) callbacks.add(callback)
+@OptIn(InternalCoroutinesApi::class, ExperimentalAtomicApi::class)
+internal abstract class AbstractObservable : Observable {
+    private val state: AtomicReference<NetworkState> = AtomicReference(NetworkState.Unknown)
+    private val lock: SynchronizedObject = SynchronizedObject()
+    private val callbacks: ArrayList<NetworkStateCallback> = ArrayList()
+
+    override fun registerCallback(callback: NetworkStateCallback): Unit = synchronized(lock) {
+        if (!callbacks.contains(callback)) {
+            callback.networkStateChanged(state.load())
+            callbacks.add(callback)
+        }
     }
 
-    override fun unregisterCallback(callback: T): Unit = synchronized(lock) {
+    override fun unregisterCallback(callback: NetworkStateCallback): Unit = synchronized(lock) {
         callbacks.remove(callback)
     }
 
-    protected fun notifyCallbacks(closure: (T) -> Unit): Unit = synchronized(lock) {
-        callbacks.forEach(closure)
+    protected fun notifyCallbacksNoDelay(state: NetworkState) {
+        if (this.state.exchange(state) == state) {
+            return
+        }
+
+        synchronized(lock) {
+            callbacks.forEach {
+                it.networkStateChanged(state)
+            }
+        }
+    }
+
+    protected suspend fun notifyCallbacks(state: NetworkState, pollingRate: Duration = 5.seconds) {
+        if (this.state.exchange(state) == state) {
+            delay(pollingRate)
+            return
+        }
+
+        synchronized(lock) {
+            callbacks.forEach {
+                it.networkStateChanged(state)
+            }
+        }
     }
 }

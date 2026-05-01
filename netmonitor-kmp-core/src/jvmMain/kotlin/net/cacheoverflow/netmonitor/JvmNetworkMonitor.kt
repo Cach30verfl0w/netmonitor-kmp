@@ -33,9 +33,9 @@ internal class JvmNetworkMonitor(private val lookup: SymbolLookup) : NetworkMoni
     private val arena: Arena = Arena.ofAuto()
     private val handle: MemorySegment = call("netmonitor_network_monitor_create", CREATE)
 
-    private val callbackHandles = mutableMapOf<NetworkMonitor.Callback, MemorySegment>()
+    private val callbackHandles = mutableMapOf<NetworkStateCallback, MemorySegment>()
 
-    override fun registerCallback(callback: NetworkMonitor.Callback) {
+    override fun registerCallback(callback: NetworkStateCallback) {
         val lookup = MethodHandles.lookup()
         val bridge = object {
             @Suppress("UNUSED")
@@ -54,7 +54,7 @@ internal class JvmNetworkMonitor(private val lookup: SymbolLookup) : NetworkMoni
         callbackHandles[callback] = nativeHandle
     }
 
-    override fun unregisterCallback(callback: NetworkMonitor.Callback) {
+    override fun unregisterCallback(callback: NetworkStateCallback) {
         val nativeHandle = callbackHandles.remove(callback) ?: return
         call("netmonitor_network_monitor_unregister_callback", UNREGISTER_CALLBACK, handle, nativeHandle) as Unit
     }

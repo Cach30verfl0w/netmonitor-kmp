@@ -23,12 +23,5 @@ import androidx.compose.runtime.Stable
  * @since  07/04/2026
  */
 @Stable
-interface NetworkMonitor : Observable<NetworkMonitor.Callback>, AutoCloseable {
-    /**
-     * @author Cedric Hammes
-     * @since  29/04/2026
-     */
-    fun interface Callback {
-        fun networkStateChanged(state: NetworkState)
-    }
-}
+interface NetworkMonitor : Observable, AutoCloseable
+

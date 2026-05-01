@@ -42,7 +42,7 @@ import kotlin.time.Duration.Companion.seconds
  * @since  28/04/2026
  */
 @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class, ExperimentalAtomicApi::class)
-internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : AbstractObservable<NetworkMonitor.Callback>(), NetworkMonitor {
+internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : AbstractObservable(), NetworkMonitor {
     private val connection: DBusConnection = library.createConnection(EnumBusType.SYSTEM).getOrThrow()
     private val isClosed: AtomicBoolean = AtomicBoolean(false)
 
@@ -65,10 +65,7 @@ internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : Abst
         connection.addFilter { _, message ->
             message.allocateIteratorWithPlacement(true, nativeHeap).use { iterator ->
                 val networkStatus = computeNetworkState(iterator) ?: return@use
-
-                notifyCallbacks { callback ->
-                    callback.networkStateChanged(networkStatus)
-                }
+                notifyCallbacksNoDelay(networkStatus)
             }
 
             false
@@ -82,14 +79,6 @@ internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : Abst
         this@DBusNetworkMonitor.coroutineContext.close()
         connection.close()
         library.close()
-    }
-
-    override fun registerCallback(callback: NetworkMonitor.Callback) {
-        getProperty("State") { computeNetworkState(it) }.getOrNull()?.let { networkState ->
-            callback.networkStateChanged(networkState)
-        }
-
-        super.registerCallback(callback)
     }
 
     private fun <T> getProperty(name: String, closure: (DBusMessage.Iterator) -> T): Result<T> = memScoped {

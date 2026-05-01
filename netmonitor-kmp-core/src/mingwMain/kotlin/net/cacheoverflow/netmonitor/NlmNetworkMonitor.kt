@@ -48,14 +48,9 @@ import kotlin.time.Duration.Companion.seconds
  * @since 01/05/2026
  */
 @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class, ExperimentalAtomicApi::class)
-internal class NlmNetworkMonitor : AbstractObservable<NetworkMonitor.Callback>(), NetworkMonitor {
-    companion object {
-        private val pollingRate: Duration = 5.seconds
-    }
-
+internal class NlmNetworkMonitor : AbstractObservable(), NetworkMonitor {
     private val coroutineScope: CoroutineScope = CoroutineScope(newSingleThreadContext("NLMNetworkMonitor") + SupervisorJob())
     private val isRunning: AtomicBoolean = AtomicBoolean(true)
-    private val state: AtomicReference<NetworkState> = AtomicReference(NetworkState.Unknown)
 
     private fun determineState(manager: INetworkListManager, costManager: INetworkCostManager): NetworkState {
         val enumNetworks = manager.getNetworks(NlmEnumNetwork.CONNECTED)
@@ -84,16 +79,7 @@ internal class NlmNetworkMonitor : AbstractObservable<NetworkMonitor.Callback>()
         )
         val costManager = manager.asCom<INetworkCostManager, _>(INetworkCostManager)
         while (isRunning.load()) {
-            val currentState = state.load()
-            val newState = determineState(manager, costManager)
-            if (newState == currentState) {
-                delay(pollingRate)
-                continue
-            }
-            state.store(newState)
-            notifyCallbacks { callback ->
-                callback.networkStateChanged(newState)
-            }
+            notifyCallbacks(determineState(manager, costManager))
         }
         costManager.release()
         manager.release()
