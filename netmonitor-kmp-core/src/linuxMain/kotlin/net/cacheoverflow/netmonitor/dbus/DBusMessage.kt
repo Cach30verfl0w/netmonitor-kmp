@@ -35,7 +35,6 @@ import kotlinx.cinterop.cstr
 import kotlinx.cinterop.free
 import kotlinx.cinterop.invoke
 import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.nativeHeap
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.toKStringFromUtf8
@@ -46,12 +45,14 @@ import kotlinx.cinterop.value
  * @since  01/05/2026
  */
 internal class DBusMessage(
-    private val library: DBusSharedLibrary,
-    internal val handle: COpaquePointer,
-    private val owned: Boolean
+    private val library: DBusSharedLibrary, internal val handle: COpaquePointer, private val owned: Boolean
 ) : AutoCloseable {
     val memberType: String
-        get() = requireNotNull(library.findFunctionOrThrow<GetMember>("dbus_message_get_member").invoke(handle)?.toKStringFromUtf8())
+        get() = requireNotNull(
+            library.findFunctionOrThrow<GetMember>("dbus_message_get_member")
+                .invoke(handle)
+                ?.toKStringFromUtf8()
+        )
 
     context(scope: MemScope)
     fun allocateIterator(read: Boolean, placement: NativePlacement? = null): Iterator =
@@ -75,8 +76,11 @@ internal class DBusMessage(
         typealias GetMember = (COpaquePointer) -> CPointer<ByteVar>?
         typealias Unref = (COpaquePointer) -> Unit
 
-        internal fun borrowed(library: DBusSharedLibrary, handle: COpaquePointer): DBusMessage = DBusMessage(library, handle, false)
-        internal fun owned(library: DBusSharedLibrary, handle: COpaquePointer): DBusMessage = DBusMessage(library, handle, true)
+        internal fun borrowed(library: DBusSharedLibrary, handle: COpaquePointer): DBusMessage =
+            DBusMessage(library, handle, false)
+
+        internal fun owned(library: DBusSharedLibrary, handle: COpaquePointer): DBusMessage =
+            DBusMessage(library, handle, true)
     }
 
     /**
@@ -103,7 +107,8 @@ internal class DBusMessage(
          *
          * @see [dbus_message_iter_get_arg_type, D-Bus: DBusMessage](https://dbus.freedesktop.org/doc/api/html/group__DBusMessage.html#ga5aae3c882a75aed953d8b3d489e9b271)
          */
-        fun currentArgType(): Char = library.findFunctionOrThrow<GetArgType>("dbus_message_iter_get_arg_type").invoke(handle).toChar()
+        fun currentArgType(): Char =
+            library.findFunctionOrThrow<GetArgType>("dbus_message_iter_get_arg_type").invoke(handle).toChar()
 
         /**
          * @author Cedric Hammes
@@ -122,8 +127,7 @@ internal class DBusMessage(
          * @see [dbus_message_iter_recurse, D-Bus: DBusMessage](https://dbus.freedesktop.org/doc/api/html/group__DBusMessage.html#ga7652e1208743da5dd4ecc5aef07bf207)
          */
         fun recurse(): Iterator? {
-            if (currentArgType() != 'v')
-                return null
+            if (currentArgType() != 'v') return null
 
             val iterator = memScope.allocArray<ByteVar>(64)
             library.findFunctionOrThrow<Recurse>("dbus_message_iter_recurse").invoke(handle, iterator)
@@ -133,8 +137,7 @@ internal class DBusMessage(
         }
 
         override fun close() {
-            if (memScope is NativeFreeablePlacement)
-                memScope.free(handle)
+            if (memScope is NativeFreeablePlacement) memScope.free(handle)
         }
 
         /**
@@ -143,11 +146,13 @@ internal class DBusMessage(
          *
          * @see [dbus_message_iter_append_basic, D-Bus: DBusMessage](https://dbus.freedesktop.org/doc/api/html/group__DBusMessage.html#ga17491f3b75b3203f6fc47dcc2e3b221b)
          */
-        private inline fun <reified T : CPointed> appendType(code: Int, closure: MemScope.() -> CPointer<T>): Boolean = memScoped {
-            val ptr = allocPointerTo<T>()
-            ptr.value = closure()
-            library.findFunctionOrThrow<AppendBasic>("dbus_message_iter_append_basic").invoke(handle, code, ptr.reinterpret())
-        }
+        private inline fun <reified T : CPointed> appendType(code: Int, closure: MemScope.() -> CPointer<T>): Boolean =
+            memScoped {
+                val ptr = allocPointerTo<T>()
+                ptr.value = closure()
+                library.findFunctionOrThrow<AppendBasic>("dbus_message_iter_append_basic")
+                    .invoke(handle, code, ptr.reinterpret())
+            }
 
         /**
          * @author Cedric Hammes
@@ -177,7 +182,11 @@ internal class DBusMessage(
             typealias GetBasic = (COpaquePointer, COpaquePointer) -> Unit
             typealias GetArgType = (COpaquePointer) -> Int
 
-            internal fun readFromMessage(memScope: NativePlacement, library: DBusSharedLibrary, message: COpaquePointer): Iterator? {
+            internal fun readFromMessage(
+                memScope: NativePlacement,
+                library: DBusSharedLibrary,
+                message: COpaquePointer
+            ): Iterator? {
                 val iterator = memScope.allocArray<LongVar>(8)
                 if (!library.findFunctionOrThrow<Init>("dbus_message_iter_init").invoke(message, iterator)) {
                     return null
@@ -186,7 +195,11 @@ internal class DBusMessage(
                 return Iterator(memScope, library, iterator)
             }
 
-            internal fun appendToMessage(memScope: NativePlacement, library: DBusSharedLibrary, message: COpaquePointer): Iterator {
+            internal fun appendToMessage(
+                memScope: NativePlacement,
+                library: DBusSharedLibrary,
+                message: COpaquePointer
+            ): Iterator {
                 val iterator = memScope.allocArray<LongVar>(8)
                 library.findFunctionOrThrow<InitAppend>("dbus_message_iter_init_append").invoke(message, iterator)
                 return Iterator(memScope, library, iterator)

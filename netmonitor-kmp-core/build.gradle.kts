@@ -11,13 +11,13 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.mavenPublish)
+    signing
 }
-
 
 kotlin {
     jvmToolchain(libs.versions.jvmTarget.get().toInt())
     androidTarget()
-    listOf(iosSimulatorArm64(), iosArm64(), iosX64(), linuxX64(), linuxArm64(), macosArm64()).forEach {
+    listOf(iosSimulatorArm64(), iosArm64(), iosX64(), linuxX64(), linuxArm64(), macosArm64(), mingwX64()).forEach {
         it.binaries.sharedLib()
     }
 
@@ -29,18 +29,17 @@ kotlin {
 
     applyDefaultHierarchyTemplate {
         common {
+            group("ios") { withIos() }
+            group("macos") { withMacos() }
+            group("native") {
+                withMingw()
+                withLinux()
+                group("ios")
+                group("macos")
+            }
             group("nonAndroid") {
                 withJvm()
-                group("native") {
-                    group("linux") {
-                        withLinuxX64()
-                        withLinuxArm64()
-                    }
-                    group("apple") {
-                        withIos()
-                        withMacos()
-                    }
-                }
+                group("native")
             }
         }
     }
@@ -67,26 +66,33 @@ kotlin {
                 api(libs.kotlinx.coroutines.core)
             }
         }
+        mingwMain {
+            dependencies {
+                implementation(libs.comInterop.core)
+            }
+        }
     }
 }
 
 val copyNativeBinariesToJar = tasks.register<Copy>("copyNativeBinariesToTar") {
     into(layout.buildDirectory.dir("generated/native-resources"))
-    kotlin.targets.filterIsInstance<KotlinNativeTarget>().filter { it.konanTarget.family != Family.IOS }.forEach { target ->
-        val sharedLibrary = requireNotNull(target.binaries.findSharedLib(NativeBuildType.RELEASE))
-        dependsOn(sharedLibrary.linkTaskProvider)
-        from(sharedLibrary.linkTaskProvider.map { it.outputFile }) {
-            val arch = target.konanTarget.architecture.name.lowercase()
-            val extension = sharedLibrary.outputFile.extension
-            val family = when(val f = target.konanTarget.family) {
-                Family.MINGW -> "windows"
-                Family.OSX -> "macos"
-                else -> f.name.lowercase()
-            }
+    kotlin.targets.filterIsInstance<KotlinNativeTarget>()
+        .filter { it.konanTarget.family != Family.IOS }
+        .forEach { target ->
+            val sharedLibrary = requireNotNull(target.binaries.findSharedLib(NativeBuildType.RELEASE))
+            dependsOn(sharedLibrary.linkTaskProvider)
+            from(sharedLibrary.linkTaskProvider.map { it.outputFile }) {
+                val arch = target.konanTarget.architecture.name.lowercase()
+                val extension = sharedLibrary.outputFile.extension
+                val family = when (val f = target.konanTarget.family) {
+                    Family.MINGW -> "windows"
+                    Family.OSX -> "macos"
+                    else -> f.name.lowercase()
+                }
 
-            rename { "netmonitor-binaries/${family}_${arch}.$extension" }
+                rename { "netmonitor-binaries/${family}_${arch}.$extension" }
+            }
         }
-    }
 }
 
 kotlin {
@@ -135,4 +141,8 @@ mavenPublishing {
             url = this@pom.url
         }
     }
+}
+
+signing {
+    isRequired = false
 }

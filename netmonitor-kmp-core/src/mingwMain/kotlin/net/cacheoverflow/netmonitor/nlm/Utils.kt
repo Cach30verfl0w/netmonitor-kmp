@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-package net.cacheoverflow.netmonitor
+package net.cacheoverflow.netmonitor.nlm
 
-import net.cacheoverflow.netmonitor.dbus.DBusSharedLibrary
+import platform.windows.HRESULT
+import platform.windows.S_OK
 
-actual fun NetworkMonitor(): NetworkMonitor = DBusNetworkMonitor(DBusSharedLibrary.open().getOrThrow())
+/**
+ * @author Alexander Hinze
+ * @since 01/05/2026
+ */
+
+internal inline fun HRESULT.checkResult(crossinline message: () -> String) {
+    check(this == S_OK) { "${message()}: 0x${toHexString()}" }
+}

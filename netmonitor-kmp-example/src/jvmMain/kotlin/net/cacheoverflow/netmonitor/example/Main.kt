@@ -20,9 +20,12 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import net.cacheoverflow.netmonitor.NetworkMonitor
 
-fun main() = application {
-    val networkMonitor = NetworkMonitor()
-    Window(onCloseRequest = ::exitApplication) {
-        RootView(networkMonitor)
+object Main {
+    @JvmStatic
+    fun main(args: Array<String>) = application {
+        val networkMonitor = NetworkMonitor()
+        Window(onCloseRequest = ::exitApplication) {
+            RootView(networkMonitor)
+        }
     }
 }
