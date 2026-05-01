@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 
-package net.cacheoverflow.netmonitor
+package net.cacheoverflow.netmonitor.dbus
 
-expect fun NetworkMonitor(): NetworkMonitor
+/**
+ * @param value raw value passed to the D-Bus api
+ *
+ * @author Cedric Hammes
+ * @since  28/04/2026
+ *
+ * @see [DBusBusType, D-Bus: Shared constants](https://dbus.freedesktop.org/doc/api/html/group__DBusShared.html#ga980320deb96476bee7555edcdebc3528)
+ */
+internal enum class EnumBusType(internal val value: Int) {
+    SESSION(0),
+    SYSTEM(1),
+    STARTER(2);
+}

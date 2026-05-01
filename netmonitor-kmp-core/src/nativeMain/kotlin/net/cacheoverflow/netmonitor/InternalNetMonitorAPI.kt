@@ -16,4 +16,10 @@
 
 package net.cacheoverflow.netmonitor
 
-expect fun NetworkMonitor(): NetworkMonitor
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
+    message = "This API is only intended for internal use and changes without any warning!"
+)
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.CLASS)
+annotation class InternalNetMonitorAPI

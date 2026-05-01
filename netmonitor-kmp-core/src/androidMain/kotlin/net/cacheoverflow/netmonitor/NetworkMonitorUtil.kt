@@ -26,12 +26,11 @@ import android.net.NetworkCapabilities
  * @since  07/04/2026
  */
 internal fun getNetworkStateFromCapabilities(
-    capabilities: NetworkCapabilities,
-    getNetworkType: (NetworkCapabilities) -> NetworkType
+    capabilities: NetworkCapabilities
 ): NetworkState = when {
     !capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) -> NetworkState.CaptivePortal
     else -> {
         val isMetered = !capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
-        NetworkState.Online(getNetworkType(capabilities), isMetered)
+        NetworkState.Online(isMetered, true)
     }
 }

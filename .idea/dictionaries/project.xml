@@ -2,6 +2,9 @@
   <dictionary name="project">
     <words>
       <w>Hammes</w>
+      <w>addr</w>
+      <w>dlopen</w>
+      <w>unref</w>
     </words>
   </dictionary>
 </component>

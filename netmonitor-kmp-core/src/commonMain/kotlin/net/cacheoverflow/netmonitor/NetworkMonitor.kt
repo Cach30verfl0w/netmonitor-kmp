@@ -17,14 +17,18 @@
 package net.cacheoverflow.netmonitor
 
 import androidx.compose.runtime.Stable
-import kotlinx.coroutines.flow.Flow
 
 /**
  * @author Cedric Hammes
  * @since  07/04/2026
  */
 @Stable
-interface NetworkMonitor : AutoCloseable {
-    val isAvailable: Boolean
-    val state: Flow<NetworkState>
+interface NetworkMonitor : Observable<NetworkMonitor.Callback>, AutoCloseable {
+    /**
+     * @author Cedric Hammes
+     * @since  29/04/2026
+     */
+    fun interface Callback {
+        fun networkStateChanged(state: NetworkState)
+    }
 }

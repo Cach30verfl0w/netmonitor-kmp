@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.cacheoverflow.netmonitor.NetworkMonitor
 import net.cacheoverflow.netmonitor.NetworkState
-import net.cacheoverflow.netmonitor.NetworkType
 
 @Composable
 fun RootView(networkMonitor: NetworkMonitor) {

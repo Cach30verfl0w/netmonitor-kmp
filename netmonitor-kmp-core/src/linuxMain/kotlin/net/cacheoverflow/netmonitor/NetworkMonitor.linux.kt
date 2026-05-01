@@ -16,4 +16,4 @@
 
 package net.cacheoverflow.netmonitor
 
-expect fun NetworkMonitor(): NetworkMonitor
+actual fun NetworkMonitor(): NetworkMonitor = DBusNetworkMonitor(TODO())

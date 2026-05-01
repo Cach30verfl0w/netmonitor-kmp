@@ -3,6 +3,7 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -16,6 +17,14 @@ kotlin {
     androidTarget()
     macosArm64()
     listOf(iosSimulatorArm64(), iosArm64(), iosX64())
+    listOf(linuxX64(), linuxArm64()).forEach { target ->
+        target.binaries {
+            executable {
+                entryPoint = "main"
+            }
+        }
+    }
+
     jvm {
         compilerOptions {
             jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
@@ -26,9 +35,9 @@ kotlin {
         common {
             group("nonAndroid") {
                 withJvm()
-                group("apple") {
-                    withIos()
-                    withMacos()
+                group("linux") {
+                    withLinuxX64()
+                    withLinuxArm64()
                 }
             }
         }
@@ -39,6 +48,17 @@ kotlin {
     }
 
     sourceSets {
+        sourceSets.all {
+            compilerOptions {
+                freeCompilerArgs.add("-Xcontext-parameters")
+            }
+
+            languageSettings {
+                optIn("net.cacheoverflow.netmonitor.InternalNetMonitorAPI")
+                optIn("kotlinx.cinterop.ExperimentalForeignApi")
+            }
+        }
+
         commonMain {
             dependencies {
                 implementation(libs.compose.runtime.annotations)

@@ -16,113 +16,66 @@
 
 package net.cacheoverflow.netmonitor
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.os.Build
-import android.telephony.TelephonyManager
-import android.util.Log
-import kotlinx.coroutines.channels.ProducerScope
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlin.concurrent.atomics.AtomicReference
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
-/**
- * @param context the android application's context for the connectivity manager
- * @return        a new network monitor capable of monitoring the device's network state
- *
- * @author Cedric Hammes
- * @since  07/04/2026
- */
 fun NetworkMonitor(contextGetter: () -> Context): NetworkMonitor = AndroidNetworkMonitor(contextGetter)
 
 /**
- * @param context the android application's context for the connectivity manager
- *
  * @author Cedric Hammes
  * @since  07/04/2026
  */
-private class AndroidNetworkMonitor(private val getContext: () -> Context) : NetworkMonitor {
+@OptIn(ExperimentalAtomicApi::class)
+private class AndroidNetworkMonitor(getContext: () -> Context) : AbstractObservable<NetworkMonitor.Callback>(), NetworkMonitor {
     private val connectivityManager: ConnectivityManager = getContext().getSystemService(ConnectivityManager::class.java)
-    private val telephonyManager: TelephonyManager = getContext().getSystemService(TelephonyManager::class.java)
-
-    override val isAvailable: Boolean = true
-    override val state: Flow<NetworkState> = callbackFlow {
-        val callback = NetworkStateEmitCallback(this)
-        val request = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .build()
-
-        connectivityManager.registerNetworkCallback(request, callback)
-        send(determineNetworkState())
-        awaitClose {
-            connectivityManager.unregisterNetworkCallback(callback)
+    private var currentState: AtomicReference<NetworkState> = AtomicReference(determineNetworkState())
+    private val networkStateCallback: NetworkStateCallback = NetworkStateCallback { newState ->
+        currentState.store(newState)
+        notifyCallbacks { callback ->
+            callback.networkStateChanged(newState)
         }
-    }.distinctUntilChanged()
+    }
 
-    override fun close() = Unit
+    init {
+        val request = NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build()
+        connectivityManager.registerNetworkCallback(request, networkStateCallback)
+    }
+
+    override fun registerCallback(callback: NetworkMonitor.Callback) {
+        callback.networkStateChanged(currentState.load())
+        super.registerCallback(callback)
+    }
+
+    override fun close() = connectivityManager.unregisterNetworkCallback(networkStateCallback)
 
     private fun determineNetworkState(network: Network? = null, capabilities: NetworkCapabilities? = null): NetworkState {
         val capabilities = capabilities
             ?: ((network ?: connectivityManager.activeNetwork)?.let { connectivityManager.getNetworkCapabilities(it) })
             ?: return NetworkState.Offline // When no capabilities can be acquired, we are offline
 
-        return getNetworkStateFromCapabilities(capabilities) {
-            when {
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> NetworkType.Bluetooth
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> getCellularInformation()
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> NetworkType.Ethernet
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WiFi
-                else -> NetworkType.Unknown
-            }
-        }
-    }
-
-    private fun getCellularInformation(): NetworkType.Cellular {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            Log.w("AndroidNetworkMonitor", "Unable to read information of cellular information because of old device version")
-            return NetworkType.Cellular(NetworkType.Cellular.Generation.UNKNOWN, null)
-        }
-
-        if (getContext().checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            Log.w("AndroidNetworkMonitor", "Unable to read information of cellular network because of missing permissions")
-            return NetworkType.Cellular(NetworkType.Cellular.Generation.UNKNOWN, null)
-        }
-
-        return NetworkType.Cellular(
-            carrier = telephonyManager.networkOperatorName.takeIf { it.isNotBlank() },
-            generation = when (telephonyManager.dataNetworkType) {
-                TelephonyManager.NETWORK_TYPE_NR -> NetworkType.Cellular.Generation.G5
-                TelephonyManager.NETWORK_TYPE_LTE -> NetworkType.Cellular.Generation.G4
-                TelephonyManager.NETWORK_TYPE_HSDPA, TelephonyManager.NETWORK_TYPE_HSPAP -> NetworkType.Cellular.Generation.G3
-                TelephonyManager.NETWORK_TYPE_EDGE, TelephonyManager.NETWORK_TYPE_GPRS -> NetworkType.Cellular.Generation.G2
-                else -> NetworkType.Cellular.Generation.UNKNOWN
-            }
-        )
+        return getNetworkStateFromCapabilities(capabilities)
     }
 
     /**
-     * @param scope the producer scope of the callback flow used for sending network state
-     *
      * @author Cedric Hammes
      * @since  07/04/2026
      */
-    private inner class NetworkStateEmitCallback(private val scope: ProducerScope<NetworkState>) : ConnectivityManager.NetworkCallback() {
+    private inner class NetworkStateCallback(private val closure: (NetworkState) -> Unit) : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            scope.trySend(determineNetworkState(network))
+            closure(determineNetworkState(network))
         }
 
         override fun onLost(network: Network) {
-            scope.trySend(NetworkState.Offline)
+            closure(NetworkState.Offline)
         }
 
         override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
-            scope.trySend(determineNetworkState(network, networkCapabilities))
+            closure(determineNetworkState(network, networkCapabilities))
         }
     }
 }

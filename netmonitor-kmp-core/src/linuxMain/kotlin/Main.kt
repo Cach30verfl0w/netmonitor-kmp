@@ -1,3 +1,7 @@
+import kotlinx.cinterop.ExperimentalForeignApi
+import net.cacheoverflow.netmonitor.DBusNetworkMonitor
+import net.cacheoverflow.netmonitor.dbus.DBusSharedLibrary
+
 /*
  * Copyright 2026 Cedric Hammes
  *
@@ -14,6 +18,15 @@
  * limitations under the License.
  */
 
-package net.cacheoverflow.netmonitor
+@OptIn(ExperimentalForeignApi::class)
+fun main() {
+    DBusSharedLibrary.open().getOrThrow().use { library ->
+        DBusNetworkMonitor(library).registerCallback {
+            println(it)
+        }
 
-expect fun NetworkMonitor(): NetworkMonitor
+        while (true) {
+
+        }
+    }
+}
