@@ -3,7 +3,9 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.konan.target.Family
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -15,9 +17,9 @@ plugins {
 kotlin {
     jvmToolchain(libs.versions.jvmTarget.get().toInt())
     androidTarget()
-    macosArm64()
-    listOf(iosSimulatorArm64(), iosArm64(), iosX64())
-    listOf(linuxX64(), linuxArm64())
+    listOf(iosSimulatorArm64(), iosArm64(), iosX64(), linuxX64(), linuxArm64(), macosArm64()).forEach {
+        it.binaries.sharedLib()
+    }
 
     jvm {
         compilerOptions {
@@ -63,6 +65,31 @@ kotlin {
                 api(libs.kotlinx.coroutines.core)
             }
         }
+    }
+}
+
+val copyNativeBinariesToJar = tasks.register<Copy>("copyNativeBinariesToTar") {
+    into(layout.buildDirectory.dir("generated/native-resources"))
+    kotlin.targets.filterIsInstance<KotlinNativeTarget>().filter { it.konanTarget.family != Family.IOS }.forEach { target ->
+        val sharedLibrary = requireNotNull(target.binaries.findSharedLib(NativeBuildType.RELEASE))
+        dependsOn(sharedLibrary.linkTaskProvider)
+        from(sharedLibrary.linkTaskProvider.map { it.outputFile }) {
+            val arch = target.konanTarget.architecture.name.lowercase()
+            val extension = sharedLibrary.outputFile.extension
+            val family = when(val f = target.konanTarget.family) {
+                Family.MINGW -> "windows"
+                Family.OSX -> "macos"
+                else -> f.name.lowercase()
+            }
+
+            rename { "netmonitor-binaries/${family}_${arch}.$extension" }
+        }
+    }
+}
+
+kotlin {
+    jvm {
+        compilations.getByName("main").defaultSourceSet.resources.srcDir(copyNativeBinariesToJar)
     }
 }
 
