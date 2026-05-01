@@ -17,11 +17,7 @@
 package net.cacheoverflow.netmonitor.dbus
 
 internal data class DBusMatchRule(
-    val type: String,
-    val sender: String?,
-    val interfaceName: String?,
-    val member: String?,
-    val path: String? = null
+    val type: String, val sender: String?, val interfaceName: String?, val member: String?, val path: String? = null
 ) {
     override fun toString(): String = buildString {
         append("type='$type'")

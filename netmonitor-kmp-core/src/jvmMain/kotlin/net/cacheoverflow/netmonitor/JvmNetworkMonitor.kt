@@ -27,6 +27,7 @@ import java.lang.invoke.MethodType
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
+@Suppress("Since15")
 internal class JvmNetworkMonitor(private val lookup: SymbolLookup) : NetworkMonitor {
     private val linker = Linker.nativeLinker()
     private val arena: Arena = Arena.ofAuto()
@@ -43,10 +44,13 @@ internal class JvmNetworkMonitor(private val lookup: SymbolLookup) : NetworkMoni
             }
         }
 
-        val finalHandle = lookup.findVirtual(bridge::class.java, "onInvoke", MethodType.methodType(Void.TYPE, Int::class.java))
-            .bindTo(bridge)
+        val finalHandle = lookup.findVirtual(
+            bridge::class.java, "onInvoke", MethodType.methodType(Void.TYPE, Int::class.java)
+        ).bindTo(bridge)
         val upcallStub = linker.upcallStub(finalHandle, CALLBACK_DESCRIPTOR, arena)
-        val nativeHandle: MemorySegment = call("netmonitor_network_monitor_register_callback", REGISTER, handle, upcallStub)
+        val nativeHandle: MemorySegment = call(
+            "netmonitor_network_monitor_register_callback", REGISTER, handle, upcallStub
+        )
         callbackHandles[callback] = nativeHandle
     }
 
@@ -59,7 +63,7 @@ internal class JvmNetworkMonitor(private val lookup: SymbolLookup) : NetworkMoni
 
     @Suppress("UNCHECKED_CAST")
     private fun <T> call(name: String, descriptor: FunctionDescriptor, vararg args: Any): T =
-        linker.downcallHandle(lookup.findOrThrow(name), descriptor).invokeWithArguments(*args) as T
+        linker.downcallHandle(lookup.find(name).get(), descriptor).invokeWithArguments(*args) as T
 
     companion object {
         private val CALLBACK_DESCRIPTOR = FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT)
@@ -82,9 +86,9 @@ internal class JvmNetworkMonitor(private val lookup: SymbolLookup) : NetworkMoni
     }
 
     private enum class NativeTarget(val os: String, val arch: String, val fileExtension: String) {
-        WINDOWS_X64("windows", "x64", "dll"),
-        LINUX_X64("linux", "x64", "so"),
-        LINUX_ARM64("linux", "arm64", "so"),
+        WINDOWS_X64("windows", "x64", "dll"), LINUX_X64("linux", "x64", "so"), LINUX_ARM64(
+            "linux", "arm64", "so"
+        ),
         MACOS_ARM64("macos", "arm64", "dylib");
 
         val binaryName: String

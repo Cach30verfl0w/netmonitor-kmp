@@ -31,8 +31,7 @@ internal abstract class AbstractObservable<T> : Observable<T> {
     protected val callbacks: ArrayList<T> = ArrayList()
 
     override fun registerCallback(callback: T): Unit = synchronized(lock) {
-        if (!callbacks.contains(callback))
-            callbacks.add(callback)
+        if (!callbacks.contains(callback)) callbacks.add(callback)
     }
 
     override fun unregisterCallback(callback: T): Unit = synchronized(lock) {

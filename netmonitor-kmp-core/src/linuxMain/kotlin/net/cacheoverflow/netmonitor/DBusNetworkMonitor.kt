@@ -64,8 +64,7 @@ internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : Abst
         connection.addMatch(DBusMatchRule.NETWORK_MANAGER_STATE_CHANGED)
         connection.addFilter { _, message ->
             message.allocateIteratorWithPlacement(true, nativeHeap).use { iterator ->
-                val networkStatus = computeNetworkState(iterator)
-                    ?: return@use
+                val networkStatus = computeNetworkState(iterator) ?: return@use
 
                 notifyCallbacks { callback ->
                     callback.networkStateChanged(networkStatus)
@@ -77,8 +76,7 @@ internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : Abst
     }
 
     override fun close() = runBlocking {
-        if (isClosed.compareAndExchange(expectedValue = false, newValue = true))
-            return@runBlocking
+        if (isClosed.compareAndExchange(expectedValue = false, newValue = true)) return@runBlocking
 
         supervisorJob.join()
         this@DBusNetworkMonitor.coroutineContext.close()
@@ -95,32 +93,31 @@ internal class DBusNetworkMonitor(private val library: DBusSharedLibrary) : Abst
     }
 
     private fun <T> getProperty(name: String, closure: (DBusMessage.Iterator) -> T): Result<T> = memScoped {
-        library.allocateMessage("org.freedesktop.NetworkManager", "org.freedesktop.DBus.Properties", "Get").use { request ->
-            request.allocateIterator(false).use { requestIterator ->
-                requestIterator.appendString("org.freedesktop.NetworkManager")
-                requestIterator.appendString(name)
-            }
-
-            connection.sendWithReplyAndBlock(request, 10.seconds).fold(
-                onFailure = { Result.failure(it) },
-                onSuccess = { response ->
-                    response.use { response ->
-                        response.allocateIterator(true, nativeHeap).let { responseIterator ->
-                            responseIterator.recurse()?.let { Result.success(closure(it)) }
-                                ?: Result.failure(IllegalArgumentException("Unable to create content iterator"))
-                        }
-                    }
+        library.allocateMessage("org.freedesktop.NetworkManager", "org.freedesktop.DBus.Properties", "Get")
+            .use { request ->
+                request.allocateIterator(false).use { requestIterator ->
+                    requestIterator.appendString("org.freedesktop.NetworkManager")
+                    requestIterator.appendString(name)
                 }
-            )
-        }
+
+                connection.sendWithReplyAndBlock(request, 10.seconds)
+                    .fold(onFailure = { Result.failure(it) }, onSuccess = { response ->
+                        response.use { response ->
+                            response.allocateIterator(true, nativeHeap).let { responseIterator ->
+                                responseIterator.recurse()?.let { Result.success(closure(it)) } ?: Result.failure(
+                                    IllegalArgumentException("Unable to create content iterator")
+                                )
+                            }
+                        }
+                    })
+            }
     }
 
-    private fun isConnectionMetered(): Result<Boolean> =
-        getProperty("Metered") { iterator ->
-            iterator.readUInt()?.rem(4U)?.let { value ->
-                value != 0U
-            } ?: false
-        }
+    private fun isConnectionMetered(): Result<Boolean> = getProperty("Metered") { iterator ->
+        iterator.readUInt()?.rem(4U)?.let { value ->
+            value != 0U
+        } ?: false
+    }
 
     private fun computeNetworkState(messageIterator: DBusMessage.Iterator): NetworkState? {
         val networkState = messageIterator.readUInt()?.let { NetworkManagerState.fromInt(it.toInt()) } ?: return null

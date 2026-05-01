@@ -60,6 +60,7 @@ sealed interface NetworkState {
                     val canReachRemoteDevices = (value and (1 shl 6)) != 0
                     Online(isMetered, canReachRemoteDevices)
                 }
+
                 2 -> Offline
                 3 -> CaptivePortal
                 else -> Unknown

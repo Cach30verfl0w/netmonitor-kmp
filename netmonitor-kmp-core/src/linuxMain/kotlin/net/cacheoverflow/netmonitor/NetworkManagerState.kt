@@ -25,14 +25,17 @@ package net.cacheoverflow.netmonitor
  * @see <a href="https://people.freedesktop.org/~lkundrak/nm-dbus-api/nm-dbus-types.html">NetworkManager D-Bus API Types</a>
  */
 internal enum class NetworkManagerState(private val value: Int, private val literal: String, val isConnected: Boolean) {
-    UNKNOWN(0, "Unknown", false),
-    ASLEEP(10, "Asleep", false),
-    DISCONNECTED(20, "Disconnected", false),
-    DISCONNECTING(30, "Disconnecting", false),
-    CONNECTING(40, "Connecting", false),
-    CONNECTED_LOCAL(50, "Connected local", true),
-    CONNECTED_SITE(60, "Connected site", true),
-    CONNECTED_GLOBAL(70, "Connected global", true);
+    UNKNOWN(0, "Unknown", false), ASLEEP(10, "Asleep", false), DISCONNECTED(
+        20,
+        "Disconnected",
+        false
+    ),
+    DISCONNECTING(30, "Disconnecting", false), CONNECTING(40, "Connecting", false), CONNECTED_LOCAL(
+        50,
+        "Connected local",
+        true
+    ),
+    CONNECTED_SITE(60, "Connected site", true), CONNECTED_GLOBAL(70, "Connected global", true);
 
     override fun toString(): String = literal
 

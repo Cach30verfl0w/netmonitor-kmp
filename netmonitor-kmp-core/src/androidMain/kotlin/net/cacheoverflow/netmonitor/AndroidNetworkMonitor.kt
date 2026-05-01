@@ -53,10 +53,13 @@ private class AndroidNetworkMonitor(getContext: () -> Context) : AbstractObserva
 
     override fun close() = connectivityManager.unregisterNetworkCallback(networkStateCallback)
 
-    private fun determineNetworkState(network: Network? = null, capabilities: NetworkCapabilities? = null): NetworkState {
-        val capabilities = capabilities
-            ?: ((network ?: connectivityManager.activeNetwork)?.let { connectivityManager.getNetworkCapabilities(it) })
-            ?: return NetworkState.Offline // When no capabilities can be acquired, we are offline
+    private fun determineNetworkState(
+        network: Network? = null,
+        capabilities: NetworkCapabilities? = null
+    ): NetworkState {
+        val capabilities = capabilities ?: ((network
+            ?: connectivityManager.activeNetwork)?.let { connectivityManager.getNetworkCapabilities(it) })
+        ?: return NetworkState.Offline // When no capabilities can be acquired, we are offline
 
         return getNetworkStateFromCapabilities(capabilities)
     }

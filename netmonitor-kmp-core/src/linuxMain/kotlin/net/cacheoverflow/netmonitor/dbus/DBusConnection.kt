@@ -39,7 +39,10 @@ import kotlin.time.Duration
  *
  * @see [D-Bus: DBusConnection](https://dbus.freedesktop.org/doc/api/html/group__DBusConnection.html)
  */
-internal class DBusConnection(private val library: DBusSharedLibrary, private val handle: COpaquePointer) : AutoCloseable {
+internal class DBusConnection(
+    private val library: DBusSharedLibrary,
+    private val handle: COpaquePointer
+) : AutoCloseable {
 
     /**
      * @author Cedric Hammes
@@ -89,9 +92,13 @@ internal class DBusConnection(private val library: DBusSharedLibrary, private va
     fun addFilter(filter: (DBusConnection, DBusMessage) -> Boolean): Boolean {
         val filterRef = StableRef.create(this to filter)
         val messageHandler = staticCFunction { connection: COpaquePointer, message: COpaquePointer, userData: COpaquePointer ->
-            val (thisClass, function) = userData.asStableRef<Pair<DBusConnection, (DBusConnection, DBusMessage) -> Boolean>>().get()
+            val (thisClass, function) = userData.asStableRef<Pair<DBusConnection, (DBusConnection, DBusMessage) -> Boolean>>()
+                .get()
             memScoped {
-                when (function.invoke(DBusConnection(thisClass.library, connection), DBusMessage.owned(thisClass.library, message))) {
+                when (function.invoke(
+                    DBusConnection(thisClass.library, connection),
+                    DBusMessage.owned(thisClass.library, message)
+                )) {
                     false -> 0
                     true -> 1
                 }

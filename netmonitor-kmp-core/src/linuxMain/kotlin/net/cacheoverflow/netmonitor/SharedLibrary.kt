@@ -69,7 +69,6 @@ open class SharedLibrary(internal val handle: CValuesRef<*>) : AutoCloseable {
 
     @InternalNetMonitorAPI
     enum class Mode(internal val inner: Int) {
-        IMMEDIATE(RTLD_NOW),
-        LAZY(RTLD_LAZY)
+        IMMEDIATE(RTLD_NOW), LAZY(RTLD_LAZY)
     }
 }
