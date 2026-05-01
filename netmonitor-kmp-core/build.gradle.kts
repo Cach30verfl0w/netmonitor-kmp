@@ -17,13 +17,7 @@ kotlin {
     androidTarget()
     macosArm64()
     listOf(iosSimulatorArm64(), iosArm64(), iosX64())
-    listOf(linuxX64(), linuxArm64()).forEach { target ->
-        target.binaries {
-            executable {
-                entryPoint = "main"
-            }
-        }
-    }
+    listOf(linuxX64(), linuxArm64())
 
     jvm {
         compilerOptions {

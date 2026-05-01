@@ -1,7 +1,3 @@
-import kotlinx.cinterop.ExperimentalForeignApi
-import net.cacheoverflow.netmonitor.DBusNetworkMonitor
-import net.cacheoverflow.netmonitor.dbus.DBusSharedLibrary
-
 /*
  * Copyright 2026 Cedric Hammes
  *
@@ -18,15 +14,19 @@ import net.cacheoverflow.netmonitor.dbus.DBusSharedLibrary
  * limitations under the License.
  */
 
-@OptIn(ExperimentalForeignApi::class)
-fun main() {
-    DBusSharedLibrary.open().getOrThrow().use { library ->
-        DBusNetworkMonitor(library).registerCallback {
-            println(it)
-        }
+package net.cacheoverflow.netmonitor
 
-        while (true) {
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 
-        }
+fun NetworkMonitor.newCallbackFlow(): Flow<NetworkState> = callbackFlow {
+    val callback = NetworkMonitor.Callback { newState ->
+        trySend(newState)
+    }
+
+    this@newCallbackFlow.registerCallback(callback)
+    awaitClose {
+        this@newCallbackFlow.unregisterCallback(callback)
     }
 }
