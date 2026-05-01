@@ -31,24 +31,17 @@ fun NetworkMonitor(contextGetter: () -> Context): NetworkMonitor = AndroidNetwor
  * @since  07/04/2026
  */
 @OptIn(ExperimentalAtomicApi::class)
-private class AndroidNetworkMonitor(getContext: () -> Context) : AbstractObservable<NetworkMonitor.Callback>(), NetworkMonitor {
+private class AndroidNetworkMonitor(getContext: () -> Context) : AbstractObservable(), NetworkMonitor {
     private val connectivityManager: ConnectivityManager = getContext().getSystemService(ConnectivityManager::class.java)
     private var currentState: AtomicReference<NetworkState> = AtomicReference(determineNetworkState())
     private val networkStateCallback: NetworkStateCallback = NetworkStateCallback { newState ->
         currentState.store(newState)
-        notifyCallbacks { callback ->
-            callback.networkStateChanged(newState)
-        }
+        notifyCallbacksNoDelay(newState)
     }
 
     init {
         val request = NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).build()
         connectivityManager.registerNetworkCallback(request, networkStateCallback)
-    }
-
-    override fun registerCallback(callback: NetworkMonitor.Callback) {
-        callback.networkStateChanged(currentState.load())
-        super.registerCallback(callback)
     }
 
     override fun close() = connectivityManager.unregisterNetworkCallback(networkStateCallback)
