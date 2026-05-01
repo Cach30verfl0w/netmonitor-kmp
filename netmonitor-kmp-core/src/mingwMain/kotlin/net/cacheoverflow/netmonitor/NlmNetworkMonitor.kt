@@ -18,6 +18,7 @@ package net.cacheoverflow.netmonitor
 
 import dev.karmakrafts.cominterop.ComRuntime
 import dev.karmakrafts.cominterop.new
+import kotlinx.cinterop.convert
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,6 +36,7 @@ import net.cacheoverflow.netmonitor.nlm.NlmConnectionCost
 import net.cacheoverflow.netmonitor.nlm.NlmConnectivity
 import net.cacheoverflow.netmonitor.nlm.NlmEnumNetwork
 import net.cacheoverflow.netmonitor.nlm.NlmNetworkCategory
+import platform.windows.CLSCTX_ALL
 import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
@@ -66,16 +68,20 @@ internal class NlmNetworkMonitor : AbstractObservable<NetworkMonitor.Callback>()
         } ?: networks.firstOrNull() ?: return NetworkState.Offline
         // If we are online, construct an appropriate state
         val category = network.category
-        val canReachRemoteDevices = category and NlmNetworkCategory.PUBLIC != 0 || category and NlmNetworkCategory.DOMAIN_AUTHENTICATED != 0
-        return NetworkState.Online(
+        val canReachRemoteDevices = category and NlmNetworkCategory.PRIVATE != 0 || category and NlmNetworkCategory.DOMAIN_AUTHENTICATED != 0
+        val state = NetworkState.Online(
             isMetered = costManager.cost.toInt() and NlmConnectionCost.UNRESTRICTED == 0,
             canReachRemoteDevices = canReachRemoteDevices
         )
+        network.release()
+        return state
     }
 
     private val pollingJob: Job = coroutineScope.launch {
         ComRuntime.init()
-        val manager = NetworkListManager.new<INetworkListManager, _, _>()
+        val manager = NetworkListManager.new<INetworkListManager, _, _>(
+            clsContext = CLSCTX_ALL.convert()
+        )
         val costManager = manager.asCom<INetworkCostManager, _>(INetworkCostManager)
         while (isRunning.load()) {
             val currentState = state.load()
@@ -89,6 +95,7 @@ internal class NlmNetworkMonitor : AbstractObservable<NetworkMonitor.Callback>()
                 callback.networkStateChanged(newState)
             }
         }
+        costManager.release()
         manager.release()
         ComRuntime.uninit()
     }

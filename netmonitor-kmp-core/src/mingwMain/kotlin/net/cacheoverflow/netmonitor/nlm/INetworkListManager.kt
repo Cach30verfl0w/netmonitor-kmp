@@ -33,7 +33,6 @@ import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
 import platform.posix.IID
 import platform.windows.HRESULT
-import platform.windows.S_OK
 
 /**
  * [INetworkListManager on MSDN](https://learn.microsoft.com/en-us/windows/win32/api/netlistmgr/nn-netlistmgr-inetworklistmanager)
@@ -48,15 +47,14 @@ internal class INetworkListManager : ComInterface<INetworkListManager.Companion>
         override val superInterfaces: Array<ComInterfaceType> = arrayOf(IDispatch)
 
         override val functions: List<String> = VTableFunctionList.build {
-            addStubs(7)
             add("GetNetworks")
-            addStubs(1)
+            addStubs(8)
         }
 
         override fun create(): ComInterface<*> = INetworkListManager()
 
         override fun getIID(iid: CPointer<IID>, iface: ComInterface<*>) {
-            ComRuntime.iidFromString("{DCB00001-570F-4A9B-8D69-199FDBA5723B}", iid)
+            ComRuntime.iidFromString("{DCB00000-570F-4A9B-8D69-199FDBA5723B}", iid)
         }
     }
 
@@ -64,7 +62,7 @@ internal class INetworkListManager : ComInterface<INetworkListManager.Companion>
 
     fun getNetworks(flags: Int): IEnumNetworks = memScoped {
         val enumAddress = alloc<COpaquePointerVar>()
-        check(GetNetworks(address, flags, enumAddress.ptr) == S_OK) { "Could not retrieve list of networks" }
+        GetNetworks(address, flags, enumAddress.ptr).checkResult { "Could not retrieve list of networks" }
         checkNotNull(enumAddress.value) { "Could not retrieve network enumerator address" }.asCom(IEnumNetworks)
     }
 }

@@ -20,6 +20,7 @@ import dev.karmakrafts.cominterop.ComInterface
 import dev.karmakrafts.cominterop.ComInterfaceType
 import dev.karmakrafts.cominterop.ComRuntime
 import dev.karmakrafts.cominterop.vtable.VTableFunctionList
+import dev.karmakrafts.cominterop.win32.IDispatch
 import kotlinx.cinterop.CFunction
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CPointer
@@ -44,22 +45,24 @@ internal class INetwork : ComInterface<INetwork.Companion>(Companion) {
     private typealias _GetConnectivity = (self: COpaquePointer, connectivity: CPointer<IntVar>) -> HRESULT
 
     companion object : ComInterfaceType {
+        override val superInterfaces: Array<ComInterfaceType> = arrayOf(IDispatch)
+
         override val functions: List<String> = VTableFunctionList.build {
-            addStubs(2)
-            add("GetCategory")
+            addStubs(10)
             add("GetConnectivity")
-            addStubs(9)
+            add("GetCategory")
+            addStubs(1)
         }
 
         override fun create(): ComInterface<*> = INetwork()
 
         override fun getIID(iid: CPointer<IID>, iface: ComInterface<*>) {
-            ComRuntime.iidFromString("{DCB00000-570F-4A9B-8D69-199FDBA5723B}", iid)
+            ComRuntime.iidFromString("{DCB00002-570F-4A9B-8D69-199FDBA5723B}", iid)
         }
     }
 
-    private val GetCategory: CPointer<CFunction<_GetCategory>> by vTable
     private val GetConnectivity: CPointer<CFunction<_GetConnectivity>> by vTable
+    private val GetCategory: CPointer<CFunction<_GetCategory>> by vTable
 
     val category: Int
         get() = memScoped {

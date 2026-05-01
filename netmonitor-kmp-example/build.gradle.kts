@@ -65,3 +65,12 @@ android {
         targetCompatibility = javaVersion
     }
 }
+
+compose {
+    desktop {
+        application {
+            mainClass = "${rootProject.group}.example.Main"
+            jvmArgs("--enable-native-access=ALL-UNNAMED")
+        }
+    }
+}

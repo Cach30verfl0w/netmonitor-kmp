@@ -21,6 +21,7 @@ import dev.karmakrafts.cominterop.ComInterfaceType
 import dev.karmakrafts.cominterop.ComRuntime
 import dev.karmakrafts.cominterop.asCom
 import dev.karmakrafts.cominterop.vtable.VTableFunctionList
+import dev.karmakrafts.cominterop.win32.IDispatch
 import kotlinx.cinterop.CFunction
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.COpaquePointerVar
@@ -46,16 +47,18 @@ internal class IEnumNetworks : ComInterface<IEnumNetworks.Companion>(Companion) 
     private typealias _Next = (self: COpaquePointer, celt: ULONG, rgelt: CPointer<COpaquePointerVar>, pceltFetched: CPointer<ULONGVar>) -> HRESULT
 
     companion object : ComInterfaceType {
+        override val superInterfaces: Array<ComInterfaceType> = arrayOf(IDispatch)
+
         override val functions: List<String> = VTableFunctionList.build {
-            addStubs(2)
+            addStubs(1)
             add("Next")
-            addStubs(2)
+            addStubs(3)
         }
 
         override fun create(): ComInterface<*> = IEnumNetworks()
 
         override fun getIID(iid: CPointer<IID>, iface: ComInterface<*>) {
-            ComRuntime.iidFromString("{DCB00001-570F-4A9B-8D69-199FDBA5723B}", iid)
+            ComRuntime.iidFromString("{DCB00003-570F-4A9B-8D69-199FDBA5723B}", iid)
         }
     }
 

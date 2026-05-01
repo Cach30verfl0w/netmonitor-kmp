@@ -16,21 +16,14 @@
 
 package net.cacheoverflow.netmonitor.nlm
 
-import dev.karmakrafts.cominterop.ComClass
-import dev.karmakrafts.cominterop.ComRuntime
-import kotlinx.cinterop.CPointer
-import platform.posix.CLSID
+import platform.windows.HRESULT
+import platform.windows.S_OK
 
 /**
- * [INetworkListManager on MSDN](https://learn.microsoft.com/en-us/windows/win32/api/netlistmgr/nn-netlistmgr-inetworklistmanager)
- *
  * @author Alexander Hinze
  * @since 01/05/2026
  */
-internal object NetworkListManager : ComClass<INetworkListManager.Companion> {
-    override fun getCLSID(clsid: CPointer<CLSID>) {
-        ComRuntime.iidFromString("{DCB00C01-570F-4A9B-8D69-199FDBA5723B}", clsid)
-    }
 
-    override val defaultInterface: INetworkListManager.Companion = INetworkListManager
+internal inline fun HRESULT.checkResult(crossinline message: () -> String) {
+    check(this == S_OK) { "${message()}: 0x${toHexString()}" }
 }
