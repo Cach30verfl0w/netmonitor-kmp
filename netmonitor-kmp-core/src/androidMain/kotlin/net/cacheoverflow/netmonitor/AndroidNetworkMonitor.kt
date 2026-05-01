@@ -21,7 +21,6 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 fun NetworkMonitor(contextGetter: () -> Context): NetworkMonitor = AndroidNetworkMonitor(contextGetter)
@@ -33,9 +32,7 @@ fun NetworkMonitor(contextGetter: () -> Context): NetworkMonitor = AndroidNetwor
 @OptIn(ExperimentalAtomicApi::class)
 private class AndroidNetworkMonitor(getContext: () -> Context) : AbstractObservable(), NetworkMonitor {
     private val connectivityManager: ConnectivityManager = getContext().getSystemService(ConnectivityManager::class.java)
-    private var currentState: AtomicReference<NetworkState> = AtomicReference(determineNetworkState())
     private val networkStateCallback: NetworkStateCallback = NetworkStateCallback { newState ->
-        currentState.store(newState)
         notifyCallbacksNoDelay(newState)
     }
 
