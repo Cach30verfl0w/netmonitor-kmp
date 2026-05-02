@@ -17,13 +17,10 @@
 package net.cacheoverflow.netmonitor
 
 import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.internal.SynchronizedObject
 import kotlinx.coroutines.internal.synchronized
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 interface Observable {
     fun registerCallback(callback: NetworkStateCallback)
@@ -51,9 +48,9 @@ internal abstract class AbstractObservable : Observable {
         callbacks.remove(callback)
     }
 
-    protected fun notifyCallbacksNoDelay(state: NetworkState) {
+    protected fun notifyCallbacks(state: NetworkState): Boolean {
         if (this.state.exchange(state) == state) {
-            return
+            return false
         }
 
         synchronized(lock) {
@@ -61,18 +58,7 @@ internal abstract class AbstractObservable : Observable {
                 it.networkStateChanged(state)
             }
         }
-    }
 
-    protected suspend fun notifyCallbacks(state: NetworkState, pollingRate: Duration = 5.seconds) {
-        if (this.state.exchange(state) == state) {
-            delay(pollingRate)
-            return
-        }
-
-        synchronized(lock) {
-            callbacks.forEach {
-                it.networkStateChanged(state)
-            }
-        }
+        return true
     }
 }
