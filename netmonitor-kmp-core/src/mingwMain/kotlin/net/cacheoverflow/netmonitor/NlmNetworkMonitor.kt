@@ -79,7 +79,8 @@ internal class NlmNetworkMonitor : AbstractObservable(), NetworkMonitor {
         )
         val costManager = manager.asCom<INetworkCostManager, _>(INetworkCostManager)
         while (isRunning.load()) {
-            notifyCallbacks(determineState(manager, costManager))
+            if (!notifyCallbacks(determineState(manager, costManager)))
+                delay(5.seconds)
         }
         costManager.release()
         manager.release()

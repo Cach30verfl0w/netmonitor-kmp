@@ -33,7 +33,7 @@ fun NetworkMonitor(contextGetter: () -> Context): NetworkMonitor = AndroidNetwor
 private class AndroidNetworkMonitor(getContext: () -> Context) : AbstractObservable(), NetworkMonitor {
     private val connectivityManager: ConnectivityManager = getContext().getSystemService(ConnectivityManager::class.java)
     private val networkStateCallback: NetworkStateCallback = NetworkStateCallback { newState ->
-        notifyCallbacksNoDelay(newState)
+        notifyCallbacks(newState)
     }
 
     init {

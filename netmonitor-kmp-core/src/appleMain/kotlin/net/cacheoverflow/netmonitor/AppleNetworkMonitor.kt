@@ -45,7 +45,7 @@ internal class AppleNetworkMonitor : AbstractObservable(), NetworkMonitor {
         nw_path_monitor_set_queue(monitor, networkQueue)
         nw_path_monitor_set_update_handler(monitor) { path ->
             if (isClosed.load() || path == null) return@nw_path_monitor_set_update_handler
-            notifyCallbacksNoDelay(mapPathToNetworkState(path))
+            notifyCallbacks(mapPathToNetworkState(path))
         }
 
         nw_path_monitor_start(monitor)

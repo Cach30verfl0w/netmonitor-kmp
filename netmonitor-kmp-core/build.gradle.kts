@@ -135,6 +135,14 @@ mavenPublishing {
                 id = "cach30verfl0w"
                 name = "Cedric Hammes"
                 url = "https://github.com/cach30verfl0w"
+                email = "contact@cach30verfl0w.net"
+            }
+        }
+        contributors {
+            contributor {
+                name = "KitsuneAlex"
+                url = "https://karmakrafts.dev"
+                email = "support@karmakrafts.dev"
             }
         }
         scm {
