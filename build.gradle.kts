@@ -1,7 +1,7 @@
 plugins {
-    alias(libs.plugins.kotlinMultiplatform).apply(false)
-    alias(libs.plugins.androidLibrary).apply(false)
-    alias(libs.plugins.androidApplication).apply(false)
+    alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.androidApplication) apply false
 }
 
 val refName = System.getenv("GITHUB_REF_NAME") ?: "local"

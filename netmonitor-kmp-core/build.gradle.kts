@@ -16,8 +16,13 @@ plugins {
 
 kotlin {
     jvmToolchain(libs.versions.jvmTarget.get().toInt())
-    androidTarget()
-    listOf(iosSimulatorArm64(), iosArm64(), iosX64(), linuxX64(), linuxArm64(), macosArm64(), mingwX64()).forEach {
+    android {
+        namespace = group.toString()
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        lint.targetSdk = libs.versions.android.targetSdk.get().toInt()
+    }
+    listOf(iosSimulatorArm64(), iosArm64(), linuxX64(), linuxArm64(), macosArm64(), mingwX64()).forEach {
         it.binaries.sharedLib()
     }
 
@@ -44,9 +49,7 @@ kotlin {
         }
     }
 
-    abiValidation {
-        enabled = true
-    }
+    abiValidation()
 
     sourceSets {
         sourceSets.all {
@@ -75,6 +78,8 @@ kotlin {
 }
 
 val copyNativeBinariesToJar = tasks.register<Copy>("copyNativeBinariesToTar") {
+    group = "natives"
+    description = "Copies required native libraries to the jar output"
     into(layout.buildDirectory.dir("generated/native-resources"))
     kotlin.targets.filterIsInstance<KotlinNativeTarget>()
         .filter { it.konanTarget.family != Family.IOS }
@@ -98,20 +103,6 @@ val copyNativeBinariesToJar = tasks.register<Copy>("copyNativeBinariesToTar") {
 kotlin {
     jvm {
         compilations.getByName("main").defaultSourceSet.resources.srcDir(copyNativeBinariesToJar)
-    }
-}
-
-android {
-    namespace = group.toString()
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-
-    compileOptions {
-        val javaVersion = JavaVersion.toVersion(libs.versions.jvmTarget.get())
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
     }
 }
 

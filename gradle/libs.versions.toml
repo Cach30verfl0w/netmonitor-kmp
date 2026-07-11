@@ -1,21 +1,21 @@
 [versions]
-netmonitor = "1.0.0" # https://github.com/Cach30verfl0w/netmonitor-kmp/releases
-kotlin = "2.3.21" # https://github.com/JetBrains/kotlin/releases
+netmonitor = "1.1.0" # https://github.com/Cach30verfl0w/netmonitor-kmp/releases
+kotlin = "2.4.0" # https://github.com/JetBrains/kotlin/releases
 jvmTarget = "21"
 
-comInterop = "1.1.0" # https://github.com/karmakrafts/COMInterop/releases
-kotlinx-coroutines = "1.10.2" # https://github.com/Kotlin/kotlinx.coroutines/releases
-composeMultiplatform = "1.10.3" # https://github.com/JetBrains/compose-multiplatform/releases
-mavenPublish = "0.36.0" # https://github.com/vanniktech/gradle-maven-publish-plugin/releases
+comInterop = "1.2.1" # https://github.com/karmakrafts/COMInterop/releases
+kotlinx-coroutines = "1.11.0" # https://github.com/Kotlin/kotlinx.coroutines/releases
+composeMultiplatform = "1.11.1" # https://github.com/JetBrains/compose-multiplatform/releases
+mavenPublish = "0.37.0" # https://github.com/vanniktech/gradle-maven-publish-plugin/releases
 
 # Android
-androidGradle = "8.13.2" # https://mvnrepository.com/artifact/com.android.tools.build/gradle
+androidGradle = "9.0.0" # https://mvnrepository.com/artifact/com.android.tools.build/gradle
 android-compileSdk = "36"
 android-targetSdk = "36"
 android-minSdk = "23"
 
 # Example App
-material3 = "1.10.0-alpha05" # https://github.com/JetBrains/compose-multiplatform/releases
+material3 = "1.11.0-alpha07" # https://github.com/JetBrains/compose-multiplatform/releases
 androidx-activity = "1.13.0" # https://developer.android.com/jetpack/androidx/releases/activity
 
 [libraries]
@@ -31,8 +31,9 @@ compose-material3 = { group = "org.jetbrains.compose.material3", name = "materia
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity" }
 
 [plugins]
+
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-androidLibrary = { id = "com.android.library", version.ref = "androidGradle" }
+androidLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "androidGradle" }
 androidApplication = { id = "com.android.application", version.ref = "androidGradle" }
 
 # Compose
