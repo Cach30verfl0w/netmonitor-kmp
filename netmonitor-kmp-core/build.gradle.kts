@@ -1,32 +1,33 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class, ExperimentalAbiValidation::class)
 
+import net.cacheoverflow.kotlinconventions.apacheLicense2
+import net.cacheoverflow.kotlinconventions.withAndroidLibrary
+import net.cacheoverflow.kotlinconventions.withJvm
+import net.cacheoverflow.kotlinconventions.withMavenPublish
+import net.cacheoverflow.kotlinconventions.withNative
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.konan.target.Family
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.mavenPublish)
+    alias(sharedLibs.plugins.kotlin.multiplatform)
+    alias(sharedLibs.plugins.android.library)
+    alias(sharedLibs.plugins.mavenPublish)
+    alias(sharedLibs.plugins.kotlin.conventions)
     signing
 }
 
+withAndroidLibrary {
+    lint.targetSdk = sharedLibs.versions.android.targetSdk.get().toInt()
+}
+withJvm()
+withNative {
+    binaries.sharedLib()
+}
+
 kotlin {
-    jvmToolchain(libs.versions.jvmTarget.get().toInt())
-    androidTarget()
-    listOf(iosSimulatorArm64(), iosArm64(), iosX64(), linuxX64(), linuxArm64(), macosArm64(), mingwX64()).forEach {
-        it.binaries.sharedLib()
-    }
-
-    jvm {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
-        }
-    }
-
     applyDefaultHierarchyTemplate {
         common {
             group("ios") { withIos() }
@@ -44,9 +45,7 @@ kotlin {
         }
     }
 
-    abiValidation {
-        enabled = true
-    }
+    abiValidation()
 
     sourceSets {
         sourceSets.all {
@@ -62,19 +61,21 @@ kotlin {
 
         commonMain {
             dependencies {
-                implementation(libs.compose.runtime.annotations)
-                api(libs.kotlinx.coroutines.core)
+                implementation(sharedLibs.compose.runtime.annotations)
+                api(sharedLibs.kotlinx.coroutines.core)
             }
         }
         mingwMain {
             dependencies {
-                implementation(libs.comInterop.core)
+                implementation(sharedLibs.comInterop.core)
             }
         }
     }
 }
 
 val copyNativeBinariesToJar = tasks.register<Copy>("copyNativeBinariesToTar") {
+    group = "natives"
+    description = "Copies required native libraries to the jar output"
     into(layout.buildDirectory.dir("generated/native-resources"))
     kotlin.targets.filterIsInstance<KotlinNativeTarget>()
         .filter { it.konanTarget.family != Family.IOS }
@@ -101,53 +102,32 @@ kotlin {
     }
 }
 
-android {
-    namespace = group.toString()
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-
-    compileOptions {
-        val javaVersion = JavaVersion.toVersion(libs.versions.jvmTarget.get())
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
-    }
+mavenPublishing {
+    signAllPublications()
 }
 
-mavenPublishing {
-    publishToMavenCentral()
-    signAllPublications()
-    coordinates(group.toString(), name, version.toString())
-
-    pom {
-        name = "netmonitor-kmp"
-        description = " A reactive network monitoring library for Kotlin Multiplatform."
+withMavenPublish {
+    name = "netmonitor-kmp"
+    description = " A reactive network monitoring library for Kotlin Multiplatform."
+    url = "https://github.com/cach30verfl0w/netmonitor-kmp"
+    apacheLicense2()
+    developers {
+        developer {
+            id = "cach30verfl0w"
+            name = "Cedric Hammes"
+            url = "https://github.com/cach30verfl0w"
+            email = "contact@cach30verfl0w.net"
+        }
+    }
+    contributors {
+        contributor {
+            name = "KitsuneAlex"
+            url = "https://karmakrafts.dev"
+            email = "support@karmakrafts.dev"
+        }
+    }
+    scm {
         url = "https://github.com/cach30verfl0w/netmonitor-kmp"
-        licenses {
-            license {
-                name = "Apache License 2.0"
-                url = "https://www.apache.org/licenses/LICENSE-2.0"
-            }
-        }
-        developers {
-            developer {
-                id = "cach30verfl0w"
-                name = "Cedric Hammes"
-                url = "https://github.com/cach30verfl0w"
-                email = "contact@cach30verfl0w.net"
-            }
-        }
-        contributors {
-            contributor {
-                name = "KitsuneAlex"
-                url = "https://karmakrafts.dev"
-                email = "support@karmakrafts.dev"
-            }
-        }
-        scm {
-            url = this@pom.url
-        }
     }
 }
 
