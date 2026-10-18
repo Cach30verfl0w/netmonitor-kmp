@@ -11,7 +11,9 @@ plugins {
 val baseVersion = sharedLibs.versions.netmonitor.get()
 val ciPipelineId = providers.environmentVariable("CI_PIPELINE_ID").orNull
 val ciCommitTag = providers.environmentVariable("CI_COMMIT_TAG").orNull
+val isCI = providers.environmentVariable("CI").orNull == "true"
 val projectVersion = when {
+    !isCI -> "1.0.0-LOCAL"
     ciCommitTag != null -> baseVersion
     ciPipelineId != null -> "$baseVersion-SNAPSHOT+$ciPipelineId"
     else -> baseVersion
