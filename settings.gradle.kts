@@ -19,20 +19,10 @@ pluginManagement {
 
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention").version("1.0.0")
+    id("net.cacheoverflow.kotlinconventions.settings-plugin").version("1.0.0")
 }
 
 dependencyResolutionManagement {
-    versionCatalogs {
-        create("sharedLibs") {
-            val localCatalog = file("../kotlin-conventions/gradle/libs.versions.toml")
-            if (localCatalog.exists()) {
-                from(files(localCatalog))
-            } else {
-                from("net.cacheoverflow.kotlinconventions:shared-catalog:1.0.0")
-            }
-        }
-    }
-
     @Suppress("UnstableApiUsage")
     repositories {
         google {
