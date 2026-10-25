@@ -31,7 +31,7 @@ Add the dependency to your `commonMain` source set in your `build.gradle.kts`:
 kotlin {  
     sourceSets { 
         commonMain.dependencies { 
-            implementation("net.cacheoverflow.netmonitor:netmonitor-kmp-core:1.0.0")
+            implementation("net.cacheoverflow.netmonitor:netmonitor-kmp-core:<version>")
         }
     }
 }
